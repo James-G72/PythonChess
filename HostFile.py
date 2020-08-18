@@ -68,4 +68,4 @@ playWindow = tk.Tk() # Root window is called playwindow
 board = GameBoard(playWindow,80) # Initialisig the game board
 board.pack(side="top", fill="both", expand="true", padx=4, pady=4) # Packing and displaying
 ctw.center_on_screen(playWindow) # This is a nifty module that centers the window for us
-playWindow.mainloop() # Main loop is set
+playWindow.mainloop() # Main loop is set here
