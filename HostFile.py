@@ -9,8 +9,9 @@ import tkinter as tk
 import center_tk_window as ctw
 
 class GameBoard(tk.Frame):
-    def __init__(self, parent, size=10, rows=8, columns=8, color1="green", color2="gray"):
+    def __init__(self, parent, size=10, rows=8, columns=8, color1="#ffffff", color2="#474747"):
         # Can be customised for different sizes but defaults to a classic chess board
+        # The default colors here are pure white and dark gray
 
         # Assembling
         self.rows = rows
@@ -45,7 +46,33 @@ class GameBoard(tk.Frame):
         self.canvas.coords(name, x0, y0)
 
     def defaults(self, imageholder):
+        '''Sets the board up for a fresh game'''
+        # Castles
         self.addpiece("r1",imageholder["r"],0,0)
+        self.addpiece("r2",imageholder["r"],0,7)
+        self.addpiece("R1",imageholder["R"],7,0)
+        self.addpiece("R2",imageholder["R"],7,7)
+        # Naves
+        self.addpiece("n1",imageholder["n"],0,1)
+        self.addpiece("n2",imageholder["n"],0,6)
+        self.addpiece("N1",imageholder["N"],7,1)
+        self.addpiece("N2",imageholder["N"],7,6)
+        # Bishops
+        self.addpiece("b1",imageholder["b"],0,2)
+        self.addpiece("b2",imageholder["b"],0,5)
+        self.addpiece("B1",imageholder["B"],7,2)
+        self.addpiece("B2",imageholder["B"],7,5)
+        # Queens
+        self.addpiece("q1",imageholder["q"],0,3)
+        self.addpiece("Q1",imageholder["Q"],7,3)
+        # Kings
+        self.addpiece("k1",imageholder["k"],0,4)
+        self.addpiece("K1",imageholder["K"],7,4)
+        # Pawns - This can easily be looped
+        for x in range(0,8):
+            self.addpiece("p"+str(x+1),imageholder["p"],1,x)
+            self.addpiece("P"+str(x+1),imageholder["P"],6,x)
+
 
     def refresh(self, event):
         '''Redraw the board, possibly in response to window being resized'''
@@ -80,11 +107,11 @@ colorlist = "bw"
 for f in piecelist:
     for l in colorlist:
         with open("Pieces/"+f+l+".gif","rb") as imageFile:
-            str = base64.b64encode(imageFile.read())
+            string = base64.b64encode(imageFile.read())
         if l == "w":
-            imageholder[f.capitalize()] = tk.PhotoImage(data=str)
+            imageholder[f.capitalize()] = tk.PhotoImage(data=string)
         else:
-            imageholder[f] = tk.PhotoImage(data=str)
+            imageholder[f] = tk.PhotoImage(data=string)
 
 board.defaults(imageholder)
 
