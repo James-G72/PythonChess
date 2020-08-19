@@ -102,10 +102,12 @@ class GameBoard(tk.Frame):
         self.playmode1.set("Person")
         self.playmode2 = tk.StringVar()
         self.playmode2.set("Computer")
-        self.player1 = tk.OptionMenu(self,self.playmode1,"Player","Computer",bg="bisque")
+        self.player1 = tk.OptionMenu(self,self.playmode1,"Player","Computer")
         self.player1.place(x=self.square_virtual_size*8 + 80, y=145, height=16)
-        self.player2 = tk.OptionMenu(self,self.playmode2,"Player","Computer",bg="bisque")
+        self.player1.config(background="bisque") # For optionmenu the bg abbreviation means in the dropdown
+        self.player2 = tk.OptionMenu(self,self.playmode2,"Player","Computer")
         self.player2.place(x=self.square_virtual_size * 8+80,y=165,height=16)
+        self.player2.config(background="bisque") # For optionmenu the bg abbreviation means in the dropdown
 
 
         # Binding configuration and left mouse click
