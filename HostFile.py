@@ -55,7 +55,7 @@ class GameBoard(tk.Frame):
 
         # Adding a quit button
         self.quit_button = tk.Button(self,text="QUIT", fg="red", command=self.quit)
-        self.quit_button.place(x=self.size*8 + 10, y=100, width=50, height=20)
+        self.quit_button.place(x=self.size*8 + 10, y=700, width=50, height=20)
 
         self.canvas.bind("<Button 1>",self.getcoords)
 
@@ -68,17 +68,19 @@ class GameBoard(tk.Frame):
         x0 = event.x
         y0 = event.y
         # This retrives the curreny x and y coordinates in terms of pixels from the top left
-        # I am not sure if this is specific to mine but there is 76 pixels per square
+        # I am not sure if this is specific to mine but there is 77 pixels per square
         self.highlightsquare(x0,y0)
 
     def highlightsquare(self, xcoord, ycoord):
-        offset = 77
+        self.canvas.delete("highlight")
+        offset = 77 # This is the number required to make it work......
         squarex = math.floor(xcoord/offset)
         squarey = math.floor(ycoord/offset)
-        self.canvas.create_line(squarex*offset,squarey*offset,squarex*offset+offset,squarey*offset,fill='red',width=3)
-        self.canvas.create_line(squarex*offset,squarey*offset,squarex*offset,squarey*offset+offset,fill='red',width=3)
-        self.canvas.create_line(squarex*offset+offset,squarey*offset+offset,squarex*offset+offset,squarey*offset,fill='red',width=3)
-        self.canvas.create_line(squarex*offset+offset,squarey*offset+offset,squarex*offset,squarey*offset+offset,fill='red',width=3)
+        selectedsquare = [squarex,squarey]
+        self.canvas.create_line(squarex*offset,squarey*offset,squarex*offset+offset,squarey*offset,fill='red',width=3,tag="highlight")
+        self.canvas.create_line(squarex*offset,squarey*offset,squarex*offset,squarey*offset+offset,fill='red',width=3,tag="highlight")
+        self.canvas.create_line(squarex*offset+offset,squarey*offset+offset,squarex*offset+offset,squarey*offset,fill='red',width=3,tag="highlight")
+        self.canvas.create_line(squarex*offset+offset,squarey*offset+offset,squarex*offset,squarey*offset+offset,fill='red',width=3,tag="highlight")
 
     def addpiece(self, name, image, row=0, column=0):
         # We can add a piece to the board at the requested location
