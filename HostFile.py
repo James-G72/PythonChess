@@ -15,7 +15,7 @@ import math
 
 
 class GameBoard(tk.Frame):
-    def __init__(self, parent, size=80, rows=8, columns=8, color1="#ffffff", color2="#474747"):
+    def __init__(self, parent, side_size, square_size=80, rows=8, columns=8, color1="#ffffff", color2="#474747"):
         # Can be customised for different sizes but defaults to a classic chess board
         # The default colors here are pure white and dark gray
 
@@ -36,17 +36,17 @@ class GameBoard(tk.Frame):
         # Assembling
         self.rows = rows
         self.columns = columns
-        self.size = size
+        self.size = square_size
+        self.side_size = side_size
         self.color1 = color1
         self.color2 = color2
         self.pieces = {}
-        # This allows for the tracking of the square selected
-        global selectedsquare
-        selectedsquare = [0,0]
+        self.pieces_inverse = {}
+        self.square_virtual_size = 77
 
         # Assumed as square but can be other
-        c_width = columns * size
-        c_height = rows * size
+        c_width = columns * self.size
+        c_height = rows * self.size
 
         # Creating the canvas for the window
         tk.Frame.__init__(self, parent)
@@ -55,7 +55,21 @@ class GameBoard(tk.Frame):
 
         # Adding a quit button
         self.quit_button = tk.Button(self,text="QUIT", fg="red", command=self.quit)
-        self.quit_button.place(x=self.size*8 + 10, y=700, width=50, height=20)
+        self.quit_button.place(x=self.square_virtual_size*8 + self.side_size/2, y=self.square_virtual_size*8-40, width=50, height=20)
+
+        # Adding a square/piece selected display
+        self.square_text_x = tk.StringVar()
+        self.square_text_x.set("Selected Square (x) = None")
+        self.selected_displaysx = tk.Label(self,textvariable=self.square_text_x)
+        self.selected_displaysx.place(x=self.square_virtual_size*8 + 30, y=20, height=16)
+        self.square_text_y = tk.StringVar()
+        self.square_text_y.set("Selected Square (y) = None")
+        self.selected_displaysy = tk.Label(self,textvariable=self.square_text_y)
+        self.selected_displaysy.place(x=self.square_virtual_size*8 + 30, y=40, height=16)
+        self.square_text_displaypiece = tk.StringVar()
+        self.square_text_displaypiece.set("Selected Piece = None")
+        self.selected_displaypiece = tk.Label(self,textvariable=self.square_text_displaypiece)
+        self.selected_displaypiece.place(x=self.square_virtual_size*8 + 30, y=60, height=16)
 
         self.canvas.bind("<Button 1>",self.getcoords)
 
@@ -73,14 +87,23 @@ class GameBoard(tk.Frame):
 
     def highlightsquare(self, xcoord, ycoord):
         self.canvas.delete("highlight")
-        offset = 77 # This is the number required to make it work......
+        offset = self.square_virtual_size # This is the number required to make it work......
         squarex = math.floor(xcoord/offset)
         squarey = math.floor(ycoord/offset)
-        selectedsquare = [squarex,squarey]
-        self.canvas.create_line(squarex*offset,squarey*offset,squarex*offset+offset,squarey*offset,fill='red',width=3,tag="highlight")
-        self.canvas.create_line(squarex*offset,squarey*offset,squarex*offset,squarey*offset+offset,fill='red',width=3,tag="highlight")
-        self.canvas.create_line(squarex*offset+offset,squarey*offset+offset,squarex*offset+offset,squarey*offset,fill='red',width=3,tag="highlight")
-        self.canvas.create_line(squarex*offset+offset,squarey*offset+offset,squarex*offset,squarey*offset+offset,fill='red',width=3,tag="highlight")
+        if squarex <=7 and squarey <=7:
+            self.selectedsquare = [squarex,squarey]
+            self.canvas.create_line(squarex*offset,squarey*offset,squarex*offset+offset,squarey*offset,fill='red',width=3,tag="highlight")
+            self.canvas.create_line(squarex*offset,squarey*offset,squarex*offset,squarey*offset+offset,fill='red',width=3,tag="highlight")
+            self.canvas.create_line(squarex*offset+offset,squarey*offset+offset,squarex*offset+offset,squarey*offset,fill='red',width=3,tag="highlight")
+            self.canvas.create_line(squarex*offset+offset,squarey*offset+offset,squarex*offset,squarey*offset+offset,fill='red',width=3,tag="highlight")
+            self.square_text_x.set("Selected Square (x) = "+str(squarex+1))
+            self.square_text_y.set("Selected Square (y) = "+str(squarey+1))
+            all_keys = []
+            for key,value in self.pieces.items():
+                if (value == (squarex,squarey)):
+                    all_keys.append(key)
+            print(all_keys)
+            self.square_text_displaypiece.set("Selected Piece = ")
 
     def addpiece(self, name, image, row=0, column=0):
         # We can add a piece to the board at the requested location
@@ -95,7 +118,7 @@ class GameBoard(tk.Frame):
 
     def placepiece(self, name, row, column):
         '''Place a piece at the given row/column'''
-        self.pieces[name] = (row, column)
+        self.pieces[name] = (column,row)
         x0 = (column * self.size) + int(self.size/2)
         y0 = (row * self.size) + int(self.size/2)
         self.canvas.coords(name, x0, y0)
@@ -104,29 +127,29 @@ class GameBoard(tk.Frame):
         '''Sets the board up for a fresh game'''
         # Castles
         self.addpiece("r1",self.imageholder["r"],0,0)
-        self.addpiece("r2",self.imageholder["r"],0,7)
-        self.addpiece("R1",self.imageholder["R"],7,0)
+        self.addpiece("r2",self.imageholder["r"],7,0)
+        self.addpiece("R1",self.imageholder["R"],0,7)
         self.addpiece("R2",self.imageholder["R"],7,7)
         # Naves
-        self.addpiece("n1",self.imageholder["n"],0,1)
-        self.addpiece("n2",self.imageholder["n"],0,6)
-        self.addpiece("N1",self.imageholder["N"],7,1)
-        self.addpiece("N2",self.imageholder["N"],7,6)
+        self.addpiece("n1",self.imageholder["n"],1,0)
+        self.addpiece("n2",self.imageholder["n"],6,0)
+        self.addpiece("N1",self.imageholder["N"],1,7)
+        self.addpiece("N2",self.imageholder["N"],6,7)
         # Bishops
-        self.addpiece("b1",self.imageholder["b"],0,2)
-        self.addpiece("b2",self.imageholder["b"],0,5)
-        self.addpiece("B1",self.imageholder["B"],7,2)
-        self.addpiece("B2",self.imageholder["B"],7,5)
+        self.addpiece("b1",self.imageholder["b"],2,0)
+        self.addpiece("b2",self.imageholder["b"],5,0)
+        self.addpiece("B1",self.imageholder["B"],2,7)
+        self.addpiece("B2",self.imageholder["B"],5,7)
         # Queens
-        self.addpiece("q1",self.imageholder["q"],0,3)
-        self.addpiece("Q1",self.imageholder["Q"],7,3)
+        self.addpiece("q1",self.imageholder["q"],3,0)
+        self.addpiece("Q1",self.imageholder["Q"],3,7)
         # Kings
-        self.addpiece("k1",self.imageholder["k"],0,4)
-        self.addpiece("K1",self.imageholder["K"],7,4)
+        self.addpiece("k1",self.imageholder["k"],4,0)
+        self.addpiece("K1",self.imageholder["K"],4,7)
         # Pawns - This can easily be looped
         for x in range(0,8):
-            self.addpiece("p"+str(x+1),self.imageholder["p"],1,x)
-            self.addpiece("P"+str(x+1),self.imageholder["P"],6,x)
+            self.addpiece("p"+str(x+1),self.imageholder["p"],x,1)
+            self.addpiece("P"+str(x+1),self.imageholder["P"],x,6)
 
     def refresh(self, event):
         '''Redraw the board, possibly in response to window being resized'''
@@ -152,12 +175,13 @@ class GameBoard(tk.Frame):
 # -----------------------  Section 2  -----------------------
 # Initialising the board
 playWindow = tk.Tk() # Root window is created
-board = GameBoard(playWindow) # Initialising the game board within the root window
+side_size = 200 # This affects the amount of space on the right of the board
+board = GameBoard(playWindow,side_size=side_size) # Initialising the game board within the root window
 board.pack(side="top", fill="both", expand="true", padx=0, pady=0) # Packing and displaying
 playWindow.resizable(width=False, height=False) # This is a very important line that stops the window being edited which makes the layout much easier
 # Setting the geometry to include all of the buttons.
 # I will need to find a better way of doing this
-playWindow.geometry(str(board.size*8+100)+"x"+str(board.size*8))
+playWindow.geometry(str(board.size*8+side_size)+"x"+str(board.size*8))
 ctw.center_on_screen(playWindow) # This is a nifty module that centers the window for us
 board.defaults() # Setting the board for the start of a game
 
