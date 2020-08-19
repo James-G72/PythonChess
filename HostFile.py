@@ -29,6 +29,7 @@ class GameBoard(tk.Frame):
         self.pieces = {}
         self.piece_description = {}
         self.square_virtual_size = 77
+        self.initiated = False # Has a game started
 
         # Adding all of the pictures from Pieces folder
         imageholder = {}
@@ -211,13 +212,15 @@ class GameBoard(tk.Frame):
             self.addpiece("p"+str(x+1),self.imageholder["p"],1,x)
             self.addpiece("P"+str(x+1),self.imageholder["P"],6,x)
 
-        self.player1.config(state="normal")  # Disabling the dropdown options
-        self.player2.config(state="normal")  # Disabling the dropdown options
-        self.canvas.delete("lock1")
-        self.canvas.delete("lock2")
+        self.player1.config(state="normal")  # Enabling the dropdown options
+        self.player2.config(state="normal")  # Enabling the dropdown options
+        self.canvas.delete("lock1") # Removing the lock symbol
+        self.canvas.delete("lock2") # Removing the lock symbol
+        self.initiated = False # Essentially saying that the game is no longer active
 
     def initiate(self):
         # Start the game here
+        self.initiated = True # Indicates that the game has started
         print("Start")
         self.player1.config(state="disabled")  # Disabling the dropdown options
         self.player2.config(state="disabled")  # Disabling the dropdown options
