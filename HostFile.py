@@ -19,6 +19,18 @@ class GameBoard(tk.Frame):
         # Can be customised for different sizes but defaults to a classic chess board
         # The default colors here are pure white and dark gray
 
+        # Assembling
+        self.rows = rows
+        self.columns = columns
+        self.size = square_size
+        self.side_size = side_size
+        self.color1 = color1
+        self.color2 = color2
+        self.pieces = {}
+        self.pieces_inverse = {}
+        self.piece_description = {}
+        self.square_virtual_size = 77
+
         # Adding all of the pictures from Pieces folder
         imageholder = {}
         piecelist = "bknpqr"
@@ -33,16 +45,20 @@ class GameBoard(tk.Frame):
                     imageholder[f] = tk.PhotoImage(data=string)
         self.imageholder = imageholder
 
-        # Assembling
-        self.rows = rows
-        self.columns = columns
-        self.size = square_size
-        self.side_size = side_size
-        self.color1 = color1
-        self.color2 = color2
-        self.pieces = {}
-        self.pieces_inverse = {}
-        self.square_virtual_size = 77
+        # Adding text for piece descriptions
+        self.piece_description["r"] = "Black Castle"
+        self.piece_description["R"] = "White Castle"
+        self.piece_description["b"] = "Black Bishop"
+        self.piece_description["B"] = "White Bishop"
+        self.piece_description["k"] = "Black King"
+        self.piece_description["K"] = "White King"
+        self.piece_description["n"] = "Black Knight"
+        self.piece_description["N"] = "White Knight"
+        self.piece_description["q"] = "Black Queen"
+        self.piece_description["Q"] = "White Queen"
+        self.piece_description["p"] = "Black Pawn"
+        self.piece_description["P"] = "White Pawn"
+
 
         # Assumed as square but can be other
         c_width = columns * self.size
@@ -98,12 +114,15 @@ class GameBoard(tk.Frame):
             self.canvas.create_line(squarex*offset+offset,squarey*offset+offset,squarex*offset,squarey*offset+offset,fill='red',width=3,tag="highlight")
             self.square_text_x.set("Selected Square (x) = "+str(squarex+1))
             self.square_text_y.set("Selected Square (y) = "+str(squarey+1))
-            all_keys = []
+            found_key = []
             for key,value in self.pieces.items():
                 if (value == (squarex,squarey)):
-                    all_keys.append(key)
-            print(all_keys)
-            self.square_text_displaypiece.set("Selected Piece = ")
+                    found_key=key
+            if found_key == []:
+                occupier = "None"
+            else:
+                occupier = self.piece_description[found_key[0]]
+            self.square_text_displaypiece.set("Selected Piece = "+occupier)
 
     def addpiece(self, name, image, row=0, column=0):
         # We can add a piece to the board at the requested location
