@@ -27,7 +27,6 @@ class GameBoard(tk.Frame):
         self.color1 = color1
         self.color2 = color2
         self.pieces = {}
-        self.pieces_inverse = {}
         self.piece_description = {}
         self.square_virtual_size = 77
 
@@ -43,6 +42,9 @@ class GameBoard(tk.Frame):
                     imageholder[f.capitalize()] = tk.PhotoImage(data=string)
                 else:
                     imageholder[f] = tk.PhotoImage(data=string)
+        with open("Pieces/lock.gif","rb") as imageFile:
+            string = base64.b64encode(imageFile.read())
+        imageholder["lock"] = tk.PhotoImage(data=string)
         self.imageholder = imageholder
 
         # Adding text for piece descriptions
@@ -157,7 +159,7 @@ class GameBoard(tk.Frame):
             self.square_text_y.set("Selected Square (y) = None")
             self.square_text_displaypiece.set("Selected Piece = None")
 
-    def addpiece(self, name, image, row=0, column=0):
+    def addpiece(self, name, image, column=0, row=0):
         # We can add a piece to the board at the requested location
         # This hijacks the function below by creating the specified piece first
         self.canvas.create_image(0,0, image=image, tags=(name, "piece"), anchor="c")
@@ -168,7 +170,7 @@ class GameBoard(tk.Frame):
         self.canvas.delete(name)
         del self.pieces[name] # We also remove it from the pieces list
 
-    def placepiece(self, name, row, column):
+    def placepiece(self, name, column, row):
         '''Place a piece at the given row/column'''
         self.pieces[name] = (column,row)
         x0 = (column * self.size) + int(self.size/2)
@@ -185,38 +187,44 @@ class GameBoard(tk.Frame):
         # Then we add in pieces 1 by 1
         # Castles
         self.addpiece("r1",self.imageholder["r"],0,0)
-        self.addpiece("r2",self.imageholder["r"],7,0)
-        self.addpiece("R1",self.imageholder["R"],0,7)
+        self.addpiece("r2",self.imageholder["r"],0,7)
+        self.addpiece("R1",self.imageholder["R"],7,0)
         self.addpiece("R2",self.imageholder["R"],7,7)
         # Naves
-        self.addpiece("n1",self.imageholder["n"],1,0)
-        self.addpiece("n2",self.imageholder["n"],6,0)
-        self.addpiece("N1",self.imageholder["N"],1,7)
-        self.addpiece("N2",self.imageholder["N"],6,7)
+        self.addpiece("n1",self.imageholder["n"],0,1)
+        self.addpiece("n2",self.imageholder["n"],0,6)
+        self.addpiece("N1",self.imageholder["N"],7,1)
+        self.addpiece("N2",self.imageholder["N"],7,6)
         # Bishops
-        self.addpiece("b1",self.imageholder["b"],2,0)
-        self.addpiece("b2",self.imageholder["b"],5,0)
-        self.addpiece("B1",self.imageholder["B"],2,7)
-        self.addpiece("B2",self.imageholder["B"],5,7)
+        self.addpiece("b1",self.imageholder["b"],0,2)
+        self.addpiece("b2",self.imageholder["b"],0,5)
+        self.addpiece("B1",self.imageholder["B"],7,2)
+        self.addpiece("B2",self.imageholder["B"],7,5)
         # Queens
-        self.addpiece("q1",self.imageholder["q"],3,0)
-        self.addpiece("Q1",self.imageholder["Q"],3,7)
+        self.addpiece("q1",self.imageholder["q"],0,3)
+        self.addpiece("Q1",self.imageholder["Q"],7,3)
         # Kings
-        self.addpiece("k1",self.imageholder["k"],4,0)
-        self.addpiece("K1",self.imageholder["K"],4,7)
+        self.addpiece("k1",self.imageholder["k"],0,4)
+        self.addpiece("K1",self.imageholder["K"],7,4)
         # Pawns - This can easily be looped
         for x in range(0,8):
-            self.addpiece("p"+str(x+1),self.imageholder["p"],x,1)
-            self.addpiece("P"+str(x+1),self.imageholder["P"],x,6)
+            self.addpiece("p"+str(x+1),self.imageholder["p"],1,x)
+            self.addpiece("P"+str(x+1),self.imageholder["P"],6,x)
 
         self.player1.config(state="normal")  # Disabling the dropdown options
         self.player2.config(state="normal")  # Disabling the dropdown options
+        self.canvas.delete("lock1")
+        self.canvas.delete("lock2")
 
     def initiate(self):
         # Start the game here
         print("Start")
         self.player1.config(state="disabled")  # Disabling the dropdown options
         self.player2.config(state="disabled")  # Disabling the dropdown options
+        self.canvas.create_image(0,0, image=self.imageholder["lock"],tags="lock1", anchor="c")
+        self.canvas.create_image(0,0,image=self.imageholder["lock"],tags="lock2",anchor="c")
+        self.canvas.coords("lock1",775,140)
+        self.canvas.coords("lock2",785,160)
 
     def refresh(self, event):
         '''Redraw the board, possibly in response to window being resized'''
