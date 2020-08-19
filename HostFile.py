@@ -91,7 +91,7 @@ class GameBoard(tk.Frame):
         self.selected_displaypiece.place(x=self.square_virtual_size*8 + 15, y=80, height=16)
 
         # Adding playmode selector
-        self.canvas.create_rectangle(self.square_virtual_size*8 + 4,100,self.square_virtual_size*8 + 10+192,190,width=2)
+        self.canvas.create_rectangle(self.square_virtual_size*8 + 4,100,self.square_virtual_size*8 + 10+192,176,width=2)
         self.mode_heading = tk.Label(self,text="Playing Modes:",font=("TKDefaultFont",18),bg="bisque")
         self.mode_heading.place(x=self.square_virtual_size*8 + 45, y=115, height=20)
         self.player1_label = tk.Label(self,text="Player 1:",bg="bisque")
@@ -109,8 +109,11 @@ class GameBoard(tk.Frame):
         self.player2.place(x=self.square_virtual_size * 8+80,y=165,height=16)
         self.player2.config(background="bisque") # For optionmenu the bg abbreviation means in the dropdown
 
-        self.start_button = tk.Button(self,text="Start!",fg="green",bg="bisque")
-        self.player2.config(state="disabled")  # For optionmenu the bg abbreviation means in the dropdown
+        # Start and reset button
+        self.reset_button = tk.Button(self,text="Reset Board",bg="black", command=self.defaults)
+        self.reset_button.place(x=self.square_virtual_size*8 + 115, y=202, height=16)
+        self.start_button = tk.Button(self,text="Start!",fg="green",background="black",font=("TKDefaultFont",30), command=self.initiate)
+        self.start_button.place(x=self.square_virtual_size * 8+20,y=196,height=28)
 
 
         # Binding configuration and left mouse click
@@ -174,6 +177,12 @@ class GameBoard(tk.Frame):
 
     def defaults(self):
         '''Sets the board up for a fresh game'''
+        # First we clear the board if it isn't already empty
+        keylist = list(self.pieces.keys())
+        for x in keylist:
+            self.removepiece(x)
+
+        # Then we add in pieces 1 by 1
         # Castles
         self.addpiece("r1",self.imageholder["r"],0,0)
         self.addpiece("r2",self.imageholder["r"],7,0)
@@ -199,6 +208,15 @@ class GameBoard(tk.Frame):
         for x in range(0,8):
             self.addpiece("p"+str(x+1),self.imageholder["p"],x,1)
             self.addpiece("P"+str(x+1),self.imageholder["P"],x,6)
+
+        self.player1.config(state="normal")  # Disabling the dropdown options
+        self.player2.config(state="normal")  # Disabling the dropdown options
+
+    def initiate(self):
+        # Start the game here
+        print("Start")
+        self.player1.config(state="disabled")  # Disabling the dropdown options
+        self.player2.config(state="disabled")  # Disabling the dropdown options
 
     def refresh(self, event):
         '''Redraw the board, possibly in response to window being resized'''
