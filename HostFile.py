@@ -71,12 +71,22 @@ board.pack(side="top", fill="both", expand="true", padx=4, pady=4) # Packing and
 
 # For some reason I can't use a function to call add pieces so will for now add them manually
 # Hopefully I can eventually make this a function within the board class
-with open("Pieces/rb.gif","rb") as imageFile:
-    str = base64.b64encode(imageFile.read())
-player1 = tk.PhotoImage(data=str)
+imageholder = {}
+piecelist = "bknpqr"
+colorlist = "bw"
+for f in piecelist:
+    for l in colorlist:
+        with open("Pieces/"+f+l+".gif","rb") as imageFile:
+            str = base64.b64encode(imageFile.read())
+        if l == "w":
+            imageholder[f.capitalize()] = tk.PhotoImage(data=str)
+        else:
+            imageholder[f] = tk.PhotoImage(data=str)
 
-board.addpiece("rb1",player1,0,0)
-board.addpiece("rb2",player1,0,7)
+def defaults(target):
+    target.addpiece("rb1",imageholder["r"],0,0)
+
+defaults(board)
 
 
 board.pack(side="top", fill="both", expand="true", padx=0, pady=0) # Packing and displaying
