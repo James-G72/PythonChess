@@ -158,7 +158,7 @@ class GameBoard(tk.Frame):
             self.square_text_displaypiece.set("Selected Piece = "+occupier)
 
             if self.initiated and found_key != []: # If a game has been started
-                self.possiblemoves(squarex,squarey,found_key)
+                self.visualisemoves(squarex,squarey,found_key)
         else:
             # If the click is off of the square
             self.square_text_x.set("Selected Square (x) = None")
@@ -166,14 +166,25 @@ class GameBoard(tk.Frame):
             self.square_text_displaypiece.set("Selected Piece = None")
 
     def possiblemoves(self,squarex,squarey,piece_code):
-        self.canvas.delete("example")
-        offset = self.square_virtual_size # This is the number required to make it work......
         if piece_code[0] == "p" or piece_code[0] == "P":
             moves = self.boardview.loc[:,piece_code]
             if moves[0] == moves[self.boardrow-1]: # Special case for the first time a pawn is moved
-                if piece_code[0] == "p":
-                    self.canvas.create_line(squarex * offset+math.floor(offset/2),squarey * offset+math.floor(offset/2),squarex * offset+offset+math.floor(offset/2),squarey * offset+math.floor(offset/2),fill='green',width=2,tag="example")
+                factor = 2
+        elif piece_code[0] == "r" or piece_code[0] == "R":
+            # Check all the possible directions
+            t = 1
+        return ["33",'44']
 
+    def visualisemoves(self,squarex,squarey,piece_code):
+        self.canvas.delete("example")
+        offset = self.square_virtual_size # This is the number required to make it work......
+        factor = 1 # This accouts for the double move on a pawns first turn
+        target_squares = self.possiblemoves(squarex,squarey,piece_code)
+        if piece_code[0] == "n" or piece_code[0] == "N":
+            t = 1
+        else:
+            for plotter in target_squares:
+                self.canvas.create_line(squarex*offset+math.floor(offset/2),squarey*offset+math.floor(offset/2),int(plotter[0])*offset+math.floor(offset/2),int(plotter[1])*offset-offset*factor+math.floor(offset/2),fill='green',width=2,tag="example")
 
 
     def addpiece(self, name, image, column=0, row=0):
