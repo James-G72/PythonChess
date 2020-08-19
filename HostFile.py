@@ -154,11 +154,17 @@ class GameBoard(tk.Frame):
             else:
                 occupier = self.piece_description[found_key[0]]
             self.square_text_displaypiece.set("Selected Piece = "+occupier)
+
+            if self.initiated and found_key != []: # If a game has been started
+                self.possiblemoves(squarex,squarey,found_key)
         else:
             # If the click is off of the square
             self.square_text_x.set("Selected Square (x) = None")
             self.square_text_y.set("Selected Square (y) = None")
             self.square_text_displaypiece.set("Selected Piece = None")
+
+    def possiblemoves(self,squarex,squarey,piece_code):
+        print("Hmmmmm")
 
     def addpiece(self, name, image, column=0, row=0):
         # We can add a piece to the board at the requested location
