@@ -13,6 +13,20 @@ class GameBoard(tk.Frame):
         # Can be customised for different sizes but defaults to a classic chess board
         # The default colors here are pure white and dark gray
 
+        # Adding all of the pictures
+        imageholder = {}
+        piecelist = "bknpqr"
+        colorlist = "bw"
+        for f in piecelist:
+            for l in colorlist:
+                with open("Pieces/"+f+l+".gif","rb") as imageFile:
+                    string = base64.b64encode(imageFile.read())
+                if l == "w":
+                    imageholder[f.capitalize()] = tk.PhotoImage(data=string)
+                else:
+                    imageholder[f] = tk.PhotoImage(data=string)
+        self.imageholder = imageholder
+
         # Assembling
         self.rows = rows
         self.columns = columns
@@ -45,34 +59,33 @@ class GameBoard(tk.Frame):
         y0 = (row * self.size) + int(self.size/2)
         self.canvas.coords(name, x0, y0)
 
-    def defaults(self, imageholder):
+    def defaults(self):
         '''Sets the board up for a fresh game'''
         # Castles
-        self.addpiece("r1",imageholder["r"],0,0)
-        self.addpiece("r2",imageholder["r"],0,7)
-        self.addpiece("R1",imageholder["R"],7,0)
-        self.addpiece("R2",imageholder["R"],7,7)
+        self.addpiece("r1",self.imageholder["r"],0,0)
+        self.addpiece("r2",self.imageholder["r"],0,7)
+        self.addpiece("R1",self.imageholder["R"],7,0)
+        self.addpiece("R2",self.imageholder["R"],7,7)
         # Naves
-        self.addpiece("n1",imageholder["n"],0,1)
-        self.addpiece("n2",imageholder["n"],0,6)
-        self.addpiece("N1",imageholder["N"],7,1)
-        self.addpiece("N2",imageholder["N"],7,6)
+        self.addpiece("n1",self.imageholder["n"],0,1)
+        self.addpiece("n2",self.imageholder["n"],0,6)
+        self.addpiece("N1",self.imageholder["N"],7,1)
+        self.addpiece("N2",self.imageholder["N"],7,6)
         # Bishops
-        self.addpiece("b1",imageholder["b"],0,2)
-        self.addpiece("b2",imageholder["b"],0,5)
-        self.addpiece("B1",imageholder["B"],7,2)
-        self.addpiece("B2",imageholder["B"],7,5)
+        self.addpiece("b1",self.imageholder["b"],0,2)
+        self.addpiece("b2",self.imageholder["b"],0,5)
+        self.addpiece("B1",self.imageholder["B"],7,2)
+        self.addpiece("B2",self.imageholder["B"],7,5)
         # Queens
-        self.addpiece("q1",imageholder["q"],0,3)
-        self.addpiece("Q1",imageholder["Q"],7,3)
+        self.addpiece("q1",self.imageholder["q"],0,3)
+        self.addpiece("Q1",self.imageholder["Q"],7,3)
         # Kings
-        self.addpiece("k1",imageholder["k"],0,4)
-        self.addpiece("K1",imageholder["K"],7,4)
+        self.addpiece("k1",self.imageholder["k"],0,4)
+        self.addpiece("K1",self.imageholder["K"],7,4)
         # Pawns - This can easily be looped
         for x in range(0,8):
-            self.addpiece("p"+str(x+1),imageholder["p"],1,x)
-            self.addpiece("P"+str(x+1),imageholder["P"],6,x)
-
+            self.addpiece("p"+str(x+1),self.imageholder["p"],1,x)
+            self.addpiece("P"+str(x+1),self.imageholder["P"],6,x)
 
     def refresh(self, event):
         '''Redraw the board, possibly in response to window being resized'''
@@ -98,24 +111,7 @@ class GameBoard(tk.Frame):
 playWindow = tk.Tk() # Root window is called
 board = GameBoard(playWindow,80) # Initialising the game board
 board.pack(side="top", fill="both", expand="true", padx=4, pady=4) # Packing and displaying
-
-# For some reason I can't use a function to call add pieces so will for now add them manually
-# Hopefully I can eventually make this a function within the board class
-imageholder = {}
-piecelist = "bknpqr"
-colorlist = "bw"
-for f in piecelist:
-    for l in colorlist:
-        with open("Pieces/"+f+l+".gif","rb") as imageFile:
-            string = base64.b64encode(imageFile.read())
-        if l == "w":
-            imageholder[f.capitalize()] = tk.PhotoImage(data=string)
-        else:
-            imageholder[f] = tk.PhotoImage(data=string)
-
-board.defaults(imageholder)
-
-
+board.defaults()
 board.pack(side="top", fill="both", expand="true", padx=0, pady=0) # Packing and displaying
 ctw.center_on_screen(playWindow) # This is a nifty module that centers the window for us
 playWindow.mainloop() # Main loop is set here
