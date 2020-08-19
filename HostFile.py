@@ -44,16 +44,6 @@ class GameBoard(tk.Frame):
         y0 = (row * self.size) + int(self.size/2)
         self.canvas.coords(name, x0, y0)
 
-    def defaultpossitions(self):
-        '''Set up the board for a new game'''
-        # Placing each of the pieces individually onto the board
-        with open("Pieces/rb.gif","rb") as imageFile:
-            base64conversion = base64.b64encode(imageFile.read())
-        piece = tk.PhotoImage(data=base64conversion)
-        self.addpiece("R",piece,0,0)
-
-
-
     def refresh(self, event):
         '''Redraw the board, possibly in response to window being resized'''
         xsize = int((event.width-1) / self.columns)
@@ -77,16 +67,18 @@ class GameBoard(tk.Frame):
 
 playWindow = tk.Tk() # Root window is called
 board = GameBoard(playWindow,80) # Initialising the game board
-board.defaultpossitions()
-board.pack(side="top", fill="both", expand="true", padx=0, pady=0) # Packing and displaying
+board.pack(side="top", fill="both", expand="true", padx=4, pady=4) # Packing and displaying
 
-import base64
-
+# For some reason I can't use a function to call add pieces so will for now add them manually
+# Hopefully I can eventually make this a function within the board class
 with open("Pieces/rb.gif","rb") as imageFile:
     str = base64.b64encode(imageFile.read())
-
-
 player1 = tk.PhotoImage(data=str)
-board.addpiece("player1",player1,0,0)
+
+board.addpiece("rb1",player1,0,0)
+board.addpiece("rb2",player1,0,7)
+
+
+board.pack(side="top", fill="both", expand="true", padx=0, pady=0) # Packing and displaying
 ctw.center_on_screen(playWindow) # This is a nifty module that centers the window for us
 playWindow.mainloop() # Main loop is set here
