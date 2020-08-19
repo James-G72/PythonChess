@@ -42,9 +42,12 @@ class GameBoard(tk.Frame):
         c_width = columns * size
         c_height = rows * size
 
+        # Creating the canvas for the window
         tk.Frame.__init__(self, parent)
         self.canvas = tk.Canvas(self, borderwidth=0, highlightthickness=0, width=c_width, height=c_height, background="bisque")
         self.canvas.pack(side="top", fill="both", expand=True, padx=10, pady=10)
+
+        # Adding a quit button
         self.button = tk.Button(self,text="QUIT", fg="red", command=self.quit)
         self.button.place(x = self.size*8 + 10, y = 100, width = 50, height = 20)
 
@@ -128,4 +131,6 @@ board.pack(side="top", fill="both", expand="true", padx=4, pady=4) # Packing and
 playWindow.geometry(str(board.size*8+100)+"x"+str(board.size*8))
 ctw.center_on_screen(playWindow) # This is a nifty module that centers the window for us
 board.defaults() # Setting the board for the start of a game
+
+
 playWindow.mainloop() # Main loop is set here
