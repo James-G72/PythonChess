@@ -11,12 +11,13 @@ import center_tk_window as ctw
 # -----------------------  Section 1  -----------------------
 # Defining the GameBoard class and all functionality required to interact with the board
 
+
 class GameBoard(tk.Frame):
     def __init__(self, parent, size=10, rows=8, columns=8, color1="#ffffff", color2="#474747"):
         # Can be customised for different sizes but defaults to a classic chess board
         # The default colors here are pure white and dark gray
 
-        # Adding all of the pictures
+        # Adding all of the pictures from Pieces folder
         imageholder = {}
         piecelist = "bknpqr"
         colorlist = "bw"
@@ -48,8 +49,19 @@ class GameBoard(tk.Frame):
         self.canvas.pack(side="top", fill="both", expand=True, padx=10, pady=10)
 
         # Adding a quit button
-        self.button = tk.Button(self,text="QUIT", fg="red", command=self.quit)
-        self.button.place(x = self.size*8 + 10, y = 100, width = 50, height = 20)
+        self.quit_button = tk.Button(self,text="QUIT", fg="red", command=self.quit)
+        self.quit_button.place(x=self.size*8 + 10, y=100, width=50, height=20)
+
+        def printcoords(event):
+            global x0,y0
+            x0 = event.x
+            y0 = event.y
+            # This retrives the curreny x and y coordinates in terms of pixels relatvie to the
+            # outputting x and y coords to console
+            print(x0,y0)
+
+        self.canvas.bind("<Button 1>",printcoords)
+
 
         # If a the user changes the window size then the refresh call is made. This is defined below
         self.canvas.bind("<Configure>", self.refresh)
@@ -126,11 +138,11 @@ class GameBoard(tk.Frame):
 playWindow = tk.Tk() # Root window is created
 board = GameBoard(playWindow,80) # Initialising the game board within the root window
 board.pack(side="top", fill="both", expand="true", padx=4, pady=4) # Packing and displaying
+playWindow.resizable(width=False, height=False) # This is a very important line that stops the window being edited which makes the layout much easier
 # Setting the geometry to include all of the buttons.
 # I will need to find a better way of doing this
 playWindow.geometry(str(board.size*8+100)+"x"+str(board.size*8))
 ctw.center_on_screen(playWindow) # This is a nifty module that centers the window for us
 board.defaults() # Setting the board for the start of a game
-
 
 playWindow.mainloop() # Main loop is set here
