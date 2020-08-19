@@ -8,6 +8,9 @@ import base64
 import tkinter as tk
 import center_tk_window as ctw
 
+# -----------------------  Section 1  -----------------------
+# Defining the GameBoard class and all functionality required to interact with the board
+
 class GameBoard(tk.Frame):
     def __init__(self, parent, size=10, rows=8, columns=8, color1="#ffffff", color2="#474747"):
         # Can be customised for different sizes but defaults to a classic chess board
@@ -41,7 +44,9 @@ class GameBoard(tk.Frame):
 
         tk.Frame.__init__(self, parent)
         self.canvas = tk.Canvas(self, borderwidth=0, highlightthickness=0, width=c_width, height=c_height, background="bisque")
-        self.canvas.pack(side="top", fill="both", expand=True, padx=2, pady=2)
+        self.canvas.pack(side="top", fill="both", expand=True, padx=10, pady=10)
+        self.button = tk.Button(self,text="QUIT", fg="red", command=self.quit)
+        self.button.place(x = self.size*8 + 10, y = 100, width = 50, height = 20)
 
         # If a the user changes the window size then the refresh call is made. This is defined below
         self.canvas.bind("<Configure>", self.refresh)
@@ -51,6 +56,11 @@ class GameBoard(tk.Frame):
         # This hijacks the function below by creating the specified piece first
         self.canvas.create_image(0,0, image=image, tags=(name, "piece"), anchor="c")
         self.placepiece(name, row, column)
+
+    def removepiece(self, name):
+        # This is used not only for when a piece is removed from the board
+        self.canvas.delete(name)
+        del self.pieces[name] # We also remove it from the pieces list
 
     def placepiece(self, name, row, column):
         '''Place a piece at the given row/column'''
@@ -108,10 +118,14 @@ class GameBoard(tk.Frame):
         self.canvas.tag_raise("piece")
         self.canvas.tag_lower("square")
 
-playWindow = tk.Tk() # Root window is called
-board = GameBoard(playWindow,80) # Initialising the game board
+# -----------------------  Section 2  -----------------------
+# Initialising the board
+playWindow = tk.Tk() # Root window is created
+board = GameBoard(playWindow,80) # Initialising the game board within the root window
 board.pack(side="top", fill="both", expand="true", padx=4, pady=4) # Packing and displaying
-board.defaults()
-board.pack(side="top", fill="both", expand="true", padx=0, pady=0) # Packing and displaying
+# Setting the geometry to include all of the buttons.
+# I will need to find a better way of doing this
+playWindow.geometry(str(board.size*8+100)+"x"+str(board.size*8))
 ctw.center_on_screen(playWindow) # This is a nifty module that centers the window for us
+board.defaults() # Setting the board for the start of a game
 playWindow.mainloop() # Main loop is set here
