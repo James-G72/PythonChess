@@ -76,16 +76,16 @@ class GameBoard(tk.Frame):
         # Adding a square/piece selected display
         self.square_text_x = tk.StringVar()
         self.square_text_x.set("Selected Square (x) = None")
-        self.selected_displaysx = tk.Label(self,textvariable=self.square_text_x)
-        self.selected_displaysx.place(x=self.square_virtual_size*8 + 30, y=20, height=16)
+        self.selected_displaysx = tk.Label(self,textvariable=self.square_text_x, bg="bisque")
+        self.selected_displaysx.place(x=self.square_virtual_size*8 + 20, y=20, height=16)
         self.square_text_y = tk.StringVar()
         self.square_text_y.set("Selected Square (y) = None")
-        self.selected_displaysy = tk.Label(self,textvariable=self.square_text_y)
-        self.selected_displaysy.place(x=self.square_virtual_size*8 + 30, y=40, height=16)
+        self.selected_displaysy = tk.Label(self,textvariable=self.square_text_y, bg="bisque")
+        self.selected_displaysy.place(x=self.square_virtual_size*8 + 20, y=40, height=16)
         self.square_text_displaypiece = tk.StringVar()
         self.square_text_displaypiece.set("Selected Piece = None")
-        self.selected_displaypiece = tk.Label(self,textvariable=self.square_text_displaypiece)
-        self.selected_displaypiece.place(x=self.square_virtual_size*8 + 30, y=60, height=16)
+        self.selected_displaypiece = tk.Label(self,textvariable=self.square_text_displaypiece, bg="bisque")
+        self.selected_displaypiece.place(x=self.square_virtual_size*8 + 20, y=60, height=16)
 
         self.canvas.bind("<Button 1>",self.getcoords)
 
