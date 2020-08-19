@@ -73,23 +73,43 @@ class GameBoard(tk.Frame):
         self.quit_button = tk.Button(self,text="QUIT", fg="red", command=self.quit)
         self.quit_button.place(x=self.square_virtual_size*8 + self.side_size/2, y=self.square_virtual_size*8-40, width=50, height=20)
 
-        # Adding a square/piece selected display
+        # Adding a square/piece selected tracker
+        self.canvas.create_rectangle(self.square_virtual_size*8 + 4,2,self.square_virtual_size*8 + 10+192,90,width=2)
+        self.selection_heading = tk.Label(self,text="Current Selection:",font=("TKDefaultFont",18),bg="bisque")
+        self.selection_heading.place(x=self.square_virtual_size*8 + 30, y=18, height=16)
         self.square_text_x = tk.StringVar()
         self.square_text_x.set("Selected Square (x) = None")
         self.selected_displaysx = tk.Label(self,textvariable=self.square_text_x, bg="bisque")
-        self.selected_displaysx.place(x=self.square_virtual_size*8 + 20, y=20, height=16)
+        self.selected_displaysx.place(x=self.square_virtual_size*8 + 15, y=40, height=16)
         self.square_text_y = tk.StringVar()
         self.square_text_y.set("Selected Square (y) = None")
         self.selected_displaysy = tk.Label(self,textvariable=self.square_text_y, bg="bisque")
-        self.selected_displaysy.place(x=self.square_virtual_size*8 + 20, y=40, height=16)
+        self.selected_displaysy.place(x=self.square_virtual_size*8 + 15, y=60, height=16)
         self.square_text_displaypiece = tk.StringVar()
         self.square_text_displaypiece.set("Selected Piece = None")
         self.selected_displaypiece = tk.Label(self,textvariable=self.square_text_displaypiece, bg="bisque")
-        self.selected_displaypiece.place(x=self.square_virtual_size*8 + 20, y=60, height=16)
+        self.selected_displaypiece.place(x=self.square_virtual_size*8 + 15, y=80, height=16)
 
-        self.canvas.bind("<Button 1>",self.getcoords)
+        # Adding playmode selector
+        self.canvas.create_rectangle(self.square_virtual_size*8 + 4,100,self.square_virtual_size*8 + 10+192,190,width=2)
+        self.mode_heading = tk.Label(self,text="Playing Modes:",font=("TKDefaultFont",18),bg="bisque")
+        self.mode_heading.place(x=self.square_virtual_size*8 + 45, y=115, height=20)
+        self.player1_label = tk.Label(self,text="Player 1:",bg="bisque")
+        self.player1_label.place(x=self.square_virtual_size*8 + 15, y=145, height=16)
+        self.player2_label = tk.Label(self,text="Player 2:",bg="bisque")
+        self.player2_label.place(x=self.square_virtual_size*8 + 15, y=165, height=16)
+        self.playmode1 = tk.StringVar()
+        self.playmode1.set("Person")
+        self.playmode2 = tk.StringVar()
+        self.playmode2.set("Computer")
+        self.player1 = tk.OptionMenu(self,self.playmode1,"Player","Computer",bg="bisque")
+        self.player1.place(x=self.square_virtual_size*8 + 80, y=145, height=16)
+        self.player2 = tk.OptionMenu(self,self.playmode2,"Player","Computer",bg="bisque")
+        self.player2.place(x=self.square_virtual_size * 8+80,y=165,height=16)
 
 
+        # Binding configuration and left mouse click
+        self.canvas.bind("<Button 1>",self.getcoords) # This allows the clicking to be tracked
         # If a the user changes the window size then the refresh call is made. This is defined below
         self.canvas.bind("<Configure>", self.refresh)
 
