@@ -30,6 +30,8 @@ class GameBoard(tk.Frame):
         self.piece_description = {}
         self.square_virtual_size = 77
         self.initiated = False # Has a game started
+        self.boardview = pd.read_pickle("/Users/jamesgower2/Loughborough University/TSteffenProjects - James/PythonChess/initial_board.pkl") # Tracks all the pieces on the board
+        self.boardrow = 0 # This tracks what row we're on
 
         # Adding all of the pictures from Pieces folder
         imageholder = {}
@@ -164,12 +166,21 @@ class GameBoard(tk.Frame):
             self.square_text_displaypiece.set("Selected Piece = None")
 
     def possiblemoves(self,squarex,squarey,piece_code):
-        print("Hmmmmm")
+        self.canvas.delete("example")
+        offset = self.square_virtual_size # This is the number required to make it work......
+        if piece_code[0] == "p" or piece_code[0] == "P":
+            moves = self.boardview.loc[:,piece_code]
+            if moves[0] == moves[self.boardrow-1]: # Special case for the first time a pawn is moved
+                if piece_code[0] == "p":
+                    self.canvas.create_line(squarex * offset+math.floor(offset/2),squarey * offset+math.floor(offset/2),squarex * offset+offset+math.floor(offset/2),squarey * offset+math.floor(offset/2),fill='green',width=2,tag="example")
+
+
 
     def addpiece(self, name, image, column=0, row=0):
         # We can add a piece to the board at the requested location
         # This hijacks the function below by creating the specified piece first
         self.canvas.create_image(0,0, image=image, tags=(name, "piece"), anchor="c")
+        self.boardview.loc[self.boardrow,name] = str(column)+str(row)
         self.placepiece(name, row, column)
 
     def removepiece(self, name):
@@ -234,6 +245,7 @@ class GameBoard(tk.Frame):
         self.canvas.create_image(0,0,image=self.imageholder["lock"],tags="lock2",anchor="c")
         self.canvas.coords("lock1",775,140)
         self.canvas.coords("lock2",785,160)
+        self.boardrow += 1
 
     def refresh(self, event):
         '''Redraw the board, possibly in response to window being resized'''
