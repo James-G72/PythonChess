@@ -102,12 +102,15 @@ class GameBoard(tk.Frame):
         self.playmode1.set("Person")
         self.playmode2 = tk.StringVar()
         self.playmode2.set("Computer")
-        self.player1 = tk.OptionMenu(self,self.playmode1,"Player","Computer")
+        self.player1 = tk.OptionMenu(self,self.playmode1,"Person","Computer")
         self.player1.place(x=self.square_virtual_size*8 + 80, y=145, height=16)
         self.player1.config(background="bisque") # For optionmenu the bg abbreviation means in the dropdown
-        self.player2 = tk.OptionMenu(self,self.playmode2,"Player","Computer")
+        self.player2 = tk.OptionMenu(self,self.playmode2,"Person","Computer")
         self.player2.place(x=self.square_virtual_size * 8+80,y=165,height=16)
         self.player2.config(background="bisque") # For optionmenu the bg abbreviation means in the dropdown
+
+        self.start_button = tk.Button(self,text="Start!",fg="green",bg="bisque")
+        self.player2.config(state="disabled")  # For optionmenu the bg abbreviation means in the dropdown
 
 
         # Binding configuration and left mouse click
@@ -145,6 +148,11 @@ class GameBoard(tk.Frame):
             else:
                 occupier = self.piece_description[found_key[0]]
             self.square_text_displaypiece.set("Selected Piece = "+occupier)
+        else:
+            # If the click is off of the square
+            self.square_text_x.set("Selected Square (x) = None")
+            self.square_text_y.set("Selected Square (y) = None")
+            self.square_text_displaypiece.set("Selected Piece = None")
 
     def addpiece(self, name, image, row=0, column=0):
         # We can add a piece to the board at the requested location
