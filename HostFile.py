@@ -7,13 +7,15 @@ import pandas as pd
 import base64
 import tkinter as tk
 import center_tk_window as ctw
+import time
+import math
 
 # -----------------------  Section 1  -----------------------
 # Defining the GameBoard class and all functionality required to interact with the board
 
 
 class GameBoard(tk.Frame):
-    def __init__(self, parent, size=10, rows=8, columns=8, color1="#ffffff", color2="#474747"):
+    def __init__(self, parent, size=80, rows=8, columns=8, color1="#ffffff", color2="#474747"):
         # Can be customised for different sizes but defaults to a classic chess board
         # The default colors here are pure white and dark gray
 
@@ -38,6 +40,9 @@ class GameBoard(tk.Frame):
         self.color1 = color1
         self.color2 = color2
         self.pieces = {}
+        # This allows for the tracking of the square selected
+        global selectedsquare
+        selectedsquare = [0,0]
 
         # Assumed as square but can be other
         c_width = columns * size
@@ -52,19 +57,28 @@ class GameBoard(tk.Frame):
         self.quit_button = tk.Button(self,text="QUIT", fg="red", command=self.quit)
         self.quit_button.place(x=self.size*8 + 10, y=100, width=50, height=20)
 
-        def printcoords(event):
-            global x0,y0
-            x0 = event.x
-            y0 = event.y
-            # This retrives the curreny x and y coordinates in terms of pixels relatvie to the
-            # outputting x and y coords to console
-            print(x0,y0)
-
-        self.canvas.bind("<Button 1>",printcoords)
+        self.canvas.bind("<Button 1>",self.getcoords)
 
 
         # If a the user changes the window size then the refresh call is made. This is defined below
         self.canvas.bind("<Configure>", self.refresh)
+
+    def getcoords(self, event):
+        global x0,y0
+        x0 = event.x
+        y0 = event.y
+        # This retrives the curreny x and y coordinates in terms of pixels from the top left
+        # I am not sure if this is specific to mine but there is 76 pixels per square
+        self.highlightsquare(x0,y0)
+
+    def highlightsquare(self, xcoord, ycoord):
+        offset = 77
+        squarex = math.floor(xcoord/offset)
+        squarey = math.floor(ycoord/offset)
+        self.canvas.create_line(squarex*offset,squarey*offset,squarex*offset+offset,squarey*offset,fill='red',width=3)
+        self.canvas.create_line(squarex*offset,squarey*offset,squarex*offset,squarey*offset+offset,fill='red',width=3)
+        self.canvas.create_line(squarex*offset+offset,squarey*offset+offset,squarex*offset+offset,squarey*offset,fill='red',width=3)
+        self.canvas.create_line(squarex*offset+offset,squarey*offset+offset,squarex*offset,squarey*offset+offset,fill='red',width=3)
 
     def addpiece(self, name, image, row=0, column=0):
         # We can add a piece to the board at the requested location
@@ -136,8 +150,8 @@ class GameBoard(tk.Frame):
 # -----------------------  Section 2  -----------------------
 # Initialising the board
 playWindow = tk.Tk() # Root window is created
-board = GameBoard(playWindow,80) # Initialising the game board within the root window
-board.pack(side="top", fill="both", expand="true", padx=4, pady=4) # Packing and displaying
+board = GameBoard(playWindow) # Initialising the game board within the root window
+board.pack(side="top", fill="both", expand="true", padx=0, pady=0) # Packing and displaying
 playWindow.resizable(width=False, height=False) # This is a very important line that stops the window being edited which makes the layout much easier
 # Setting the geometry to include all of the buttons.
 # I will need to find a better way of doing this
