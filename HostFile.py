@@ -44,6 +44,9 @@ class GameBoard(tk.Frame):
         y0 = (row * self.size) + int(self.size/2)
         self.canvas.coords(name, x0, y0)
 
+    def defaults(self, imageholder):
+        self.addpiece("r1",imageholder["r"],0,0)
+
     def refresh(self, event):
         '''Redraw the board, possibly in response to window being resized'''
         xsize = int((event.width-1) / self.columns)
@@ -83,10 +86,7 @@ for f in piecelist:
         else:
             imageholder[f] = tk.PhotoImage(data=str)
 
-def defaults(target):
-    target.addpiece("rb1",imageholder["r"],0,0)
-
-defaults(board)
+board.defaults(imageholder)
 
 
 board.pack(side="top", fill="both", expand="true", padx=0, pady=0) # Packing and displaying
