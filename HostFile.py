@@ -3,12 +3,13 @@
 # The original plan was to use matplotlib but for ease tkinter will be used instead as this makes adding controls very simple
 
 import numpy as np
+import pandas as pd
+import base64
 import tkinter as tk
 import center_tk_window as ctw
-import pandas as pd
 
 class GameBoard(tk.Frame):
-    def __init__(self, parent, size=10, rows=8, columns=8, color1="black", color2="white"):
+    def __init__(self, parent, size=10, rows=8, columns=8, color1="green", color2="gray"):
         # Can be customised for different sizes but defaults to a classic chess board
 
         # Assembling
@@ -43,6 +44,16 @@ class GameBoard(tk.Frame):
         y0 = (row * self.size) + int(self.size/2)
         self.canvas.coords(name, x0, y0)
 
+    def defaultpossitions(self):
+        '''Set up the board for a new game'''
+        # Placing each of the pieces individually onto the board
+        with open("Pieces/rb.gif","rb") as imageFile:
+            base64conversion = base64.b64encode(imageFile.read())
+        piece = tk.PhotoImage(data=base64conversion)
+        self.addpiece("R",piece,0,0)
+
+
+
     def refresh(self, event):
         '''Redraw the board, possibly in response to window being resized'''
         xsize = int((event.width-1) / self.columns)
@@ -64,8 +75,18 @@ class GameBoard(tk.Frame):
         self.canvas.tag_raise("piece")
         self.canvas.tag_lower("square")
 
-playWindow = tk.Tk() # Root window is called playwindow
-board = GameBoard(playWindow,80) # Initialisig the game board
-board.pack(side="top", fill="both", expand="true", padx=4, pady=4) # Packing and displaying
+playWindow = tk.Tk() # Root window is called
+board = GameBoard(playWindow,80) # Initialising the game board
+board.defaultpossitions()
+board.pack(side="top", fill="both", expand="true", padx=0, pady=0) # Packing and displaying
+
+import base64
+
+with open("Pieces/rb.gif","rb") as imageFile:
+    str = base64.b64encode(imageFile.read())
+
+
+player1 = tk.PhotoImage(data=str)
+board.addpiece("player1",player1,0,0)
 ctw.center_on_screen(playWindow) # This is a nifty module that centers the window for us
 playWindow.mainloop() # Main loop is set here

@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 import tkinter as tk
 import center_tk_window as ctw
 
