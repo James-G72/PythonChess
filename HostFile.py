@@ -30,7 +30,7 @@ class GameBoard(tk.Frame):
         self.piece_description = {}
         self.square_virtual_size = 77
         self.initiated = False # Has a game started
-        self.boardview = pd.read_pickle("/Users/jamesgower2/Loughborough University/TSteffenProjects - James/PythonChess/initial_board.pkl") # Tracks all the pieces on the board
+        self.piece_index = pd.read_pickle("/Users/jamesgower2/Loughborough University/TSteffenProjects - James/PythonChess/initial_board.pkl") # Tracks all the pieces on the board
         self.boardrow = 0 # This tracks what row we're on
 
         # Adding all of the pictures from Pieces folder
@@ -99,9 +99,9 @@ class GameBoard(tk.Frame):
         self.canvas.create_rectangle(self.square_virtual_size*8 + 4,100,self.square_virtual_size*8 + 10+192,176,width=2)
         self.mode_heading = tk.Label(self,text="Playing Modes:",font=("TKDefaultFont",18),bg="bisque")
         self.mode_heading.place(x=self.square_virtual_size*8 + 45, y=115, height=20)
-        self.player1_label = tk.Label(self,text="Player 1:",bg="bisque")
+        self.player1_label = tk.Label(self,text="White:",bg="bisque")
         self.player1_label.place(x=self.square_virtual_size*8 + 15, y=145, height=16)
-        self.player2_label = tk.Label(self,text="Player 2:",bg="bisque")
+        self.player2_label = tk.Label(self,text="Black:",bg="bisque")
         self.player2_label.place(x=self.square_virtual_size*8 + 15, y=165, height=16)
         self.playmode1 = tk.StringVar()
         self.playmode1.set("Person")
@@ -166,14 +166,25 @@ class GameBoard(tk.Frame):
             self.square_text_displaypiece.set("Selected Piece = None")
 
     def possiblemoves(self,squarex,squarey,piece_code):
+        returnlist = []
+        # Valid square calculations for the pawn which is the most irregular
         if piece_code[0] == "p" or piece_code[0] == "P":
-            moves = self.boardview.loc[:,piece_code]
+            moves = self.piece_index.loc[:,piece_code]
             if moves[0] == moves[self.boardrow-1]: # Special case for the first time a pawn is moved
-                factor = 2
+                doublemove = True
+            if piece_code[0] == "p":
+                returnlist.append(str(squarex)+str(squarey+factor))
+            else:
+                returnlist.append(str(squarex)+str(squarey-factor))
+            return returnlist
         elif piece_code[0] == "r" or piece_code[0] == "R":
             # Check all the possible directions
-            t = 1
-        return ["33",'44']
+            if self.piece_index.loc[self.boardrow-1,]
+            return []
+        else:
+            return ["33",'44']
+
+        def checksquare(color,)
 
     def visualisemoves(self,squarex,squarey,piece_code):
         self.canvas.delete("example")
@@ -181,17 +192,21 @@ class GameBoard(tk.Frame):
         factor = 1 # This accouts for the double move on a pawns first turn
         target_squares = self.possiblemoves(squarex,squarey,piece_code)
         if piece_code[0] == "n" or piece_code[0] == "N":
-            t = 1
-        else:
+            # Taking into account the the way a knight moves indirectly
             for plotter in target_squares:
-                self.canvas.create_line(squarex*offset+math.floor(offset/2),squarey*offset+math.floor(offset/2),int(plotter[0])*offset+math.floor(offset/2),int(plotter[1])*offset-offset*factor+math.floor(offset/2),fill='green',width=2,tag="example")
+                self.canvas.create_line(squarex*offset+math.floor(offset/2),squarey*offset+math.floor(offset/2),int(plotter[0])*offset+math.floor(offset/2),squarey*offset*factor+math.floor(offset/2),fill='green',width=2,tag="example")
+                self.canvas.create_line(int(plotter[0])*offset+math.floor(offset/2),squarey*offset*factor+math.floor(offset/2),int(plotter[0]) * offset+math.floor(offset / 2),int(plotter[1]) * offset * factor+math.floor(offset / 2),fill='green',width=2,tag="example")
+        else:
+            # All other pieces can be a straight line
+            for plotter in target_squares:
+                self.canvas.create_line(squarex*offset+math.floor(offset/2),squarey*offset+math.floor(offset/2),int(plotter[0])*offset+math.floor(offset/2),int(plotter[1])*offset*factor+math.floor(offset/2),fill='green',width=2,tag="example")
 
 
     def addpiece(self, name, image, column=0, row=0):
         # We can add a piece to the board at the requested location
         # This hijacks the function below by creating the specified piece first
         self.canvas.create_image(0,0, image=image, tags=(name, "piece"), anchor="c")
-        self.boardview.loc[self.boardrow,name] = str(column)+str(row)
+        self.piece_index.loc[self.boardrow,name] = str(column)+str(row)
         self.placepiece(name, row, column)
 
     def removepiece(self, name):
