@@ -14,6 +14,12 @@ class Knight():
         self.check = False
 
         self.moves = pd.DataFrame(np.zeros((8,8)),index=[0,1,2,3,4,5,6,7],columns=[0,1,2,3,4,5,6,7])
+        if self.colour == "w":
+            self.moves.loc[col-1,5] = 1
+            self.moves.loc[col+1,5] = 1
+        else:
+            self.moves.loc[col-1,2] = 1
+            self.moves.loc[col+1,2] = 1
 
     def getid(self):
         # Returns the id that corresponds to the correct image
