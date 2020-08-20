@@ -168,16 +168,13 @@ class GameBoard(tk.Frame):
         self.canvas.create_line(squarex * offset+offset,squarey * offset+offset,squarex * offset+offset,squarey * offset,fill=colour,width=3,tag=tag)
         self.canvas.create_line(squarex * offset+offset,squarey * offset+offset,squarex * offset,squarey * offset+offset,fill=colour,width=3,tag=tag)
 
-    def possiblemoves(self,squarex,squarey,piece_code):
-        returnlist = []
-
-
-        # def checksquare(color,)
+    def possiblemoves(self,squarex,squarey):
+        self.boardarray.loc[squarey,squarex].updatemoves(squarex,squarey,self.boardarray)
 
     def visualisemoves(self,squarex,squarey,piece_code):
         self.canvas.delete("example")
         offset = self.square_virtual_size # This is the number required to make it work......
-        factor = 1 # This accouts for the double move on a pawns first turn
+        factor = 1 # This accounts for the double move on a pawns first turn
         target_squares = self.possiblemoves(squarex,squarey,piece_code)
         for plotter in target_squares:
             self.highlightsquare(int(plotter[0]),int(plotter[1]),"green","example")
@@ -202,69 +199,97 @@ class GameBoard(tk.Frame):
 
     def defaults(self):
         '''Sets the board up for a fresh game'''
-        # First we clear the board if it isn't already empty
-        keylist = list(self.pieces.keys())
-        for x in keylist:
-            self.removepiece(x)
 
-        # Then we add in pieces 1 by 1 and create the objects to store in boardarray
+        # Adding in pieces 1 by 1 and create the objects to store in boardarray
         # Castles
-        self.addpiece("r1",self.imageholder["r"],0,0)
         r1 = ChessPieces.Rook("r1")
+        r2 = ChessPieces.Rook("r2")
+        R1 = ChessPieces.Rook("R1")
+        R2 = ChessPieces.Rook("R2")
+        self.addpiece("r1",self.imageholder["r"],0,0)
         self.boardarray.loc[0,0] = r1
         self.addpiece("r2",self.imageholder["r"],0,7)
-        r2 = ChessPieces.Rook("r2")
         self.boardarray.loc[0,7] = r2
         self.addpiece("R1",self.imageholder["R"],7,0)
-        R1 = ChessPieces.Rook("R1")
         self.boardarray.loc[7,0] = R1
         self.addpiece("R2",self.imageholder["R"],7,7)
-        R2 = ChessPieces.Rook("R2")
         self.boardarray.loc[7,7] = R2
         # Naves
-        self.addpiece("n1",self.imageholder["n"],0,1)
         n1 = ChessPieces.Knight("n1")
+        n2 = ChessPieces.Knight("n2")
+        N1 = ChessPieces.Knight("N1")
+        N2 = ChessPieces.Knight("N2")
+        self.addpiece("n1",self.imageholder["n"],0,1)
         self.boardarray.loc[0,1] = n1
         self.addpiece("n2",self.imageholder["n"],0,6)
-        n2 = ChessPieces.Knight("n2")
         self.boardarray.loc[0,6] = n2
         self.addpiece("N1",self.imageholder["N"],7,1)
-        N1 = ChessPieces.Knight("N1")
         self.boardarray.loc[7,1] = N1
         self.addpiece("N2",self.imageholder["N"],7,6)
-        N2 = ChessPieces.Knight("N2")
         self.boardarray.loc[7,6] = N2
         # Bishops
-        self.addpiece("b1",self.imageholder["b"],0,2)
         b1 = ChessPieces.Bishop("b1")
+        b2 = ChessPieces.Bishop("b2")
+        B1 = ChessPieces.Bishop("B1")
+        B2 = ChessPieces.Bishop("B2")
+        self.addpiece("b1",self.imageholder["b"],0,2)
         self.boardarray.loc[0,2] = b1
         self.addpiece("b2",self.imageholder["b"],0,5)
-        b2 = ChessPieces.Bishop("b2")
         self.boardarray.loc[0,5] = b2
         self.addpiece("B1",self.imageholder["B"],7,2)
-        B1 = ChessPieces.Bishop("B1")
         self.boardarray.loc[7,2] = B1
         self.addpiece("B2",self.imageholder["B"],7,5)
-        B2 = ChessPieces.Bishop("B2")
         self.boardarray.loc[7,5] = B2
         # Queens
-        self.addpiece("q1",self.imageholder["q"],0,3)
         q1 = ChessPieces.Queen("q1")
+        Q1 = ChessPieces.Queen("Q1")
+        self.addpiece("q1",self.imageholder["q"],0,3)
         self.boardarray.loc[0,3] = q1
         self.addpiece("Q1",self.imageholder["Q"],7,3)
-        Q1 = ChessPieces.Queen("Q1")
         self.boardarray.loc[7,3] = Q1
         # Kings
-        self.addpiece("k1",self.imageholder["k"],0,4)
         k1 = ChessPieces.King("k1")
+        K1 = ChessPieces.King("K1")
+        self.addpiece("k1",self.imageholder["k"],0,4)
         self.boardarray.loc[0,4] = k1
         self.addpiece("K1",self.imageholder["K"],7,4)
-        K1 = ChessPieces.King("K1")
         self.boardarray.loc[7,4] = K1
         # Pawns
+        p1 = ChessPieces.Pawn("p1")
+        p2 = ChessPieces.Pawn("p2")
+        p3 = ChessPieces.Pawn("p3")
+        p4 = ChessPieces.Pawn("p4")
+        p5 = ChessPieces.Pawn("p5")
+        p6 = ChessPieces.Pawn("p6")
+        p7 = ChessPieces.Pawn("p7")
+        p8 = ChessPieces.Pawn("p8")
+        P1 = ChessPieces.Pawn("P1")
+        P2 = ChessPieces.Pawn("P2")
+        P3 = ChessPieces.Pawn("P3")
+        P4 = ChessPieces.Pawn("P4")
+        P5 = ChessPieces.Pawn("P5")
+        P6 = ChessPieces.Pawn("P6")
+        P7 = ChessPieces.Pawn("P7")
+        P8 = ChessPieces.Pawn("P8")
         for x in range(0,8):
             self.addpiece("p"+str(x+1),self.imageholder["p"],1,x)
             self.addpiece("P"+str(x+1),self.imageholder["P"],6,x)
+        self.boardarray.loc[1,0] = p1
+        self.boardarray.loc[1,1] = p2
+        self.boardarray.loc[1,2] = p3
+        self.boardarray.loc[1,3] = p4
+        self.boardarray.loc[1,4] = p5
+        self.boardarray.loc[1,5] = p6
+        self.boardarray.loc[1,6] = p7
+        self.boardarray.loc[1,7] = p8
+        self.boardarray.loc[6,0] = P1
+        self.boardarray.loc[6,1] = P2
+        self.boardarray.loc[6,2] = P3
+        self.boardarray.loc[6,3] = P4
+        self.boardarray.loc[6,4] = P5
+        self.boardarray.loc[6,5] = P6
+        self.boardarray.loc[6,6] = P7
+        self.boardarray.loc[6,7] = P8
 
         self.player1.config(state="normal")  # Enabling the dropdown options
         self.player2.config(state="normal")
@@ -277,8 +302,8 @@ class GameBoard(tk.Frame):
         self.initiated = True # Indicates that the game has started
         print("Start")
         self.player1.config(state="disabled")  # Disabling the dropdown options
-        self.player2.config(state="disabled")  # Disabling the dropdown options
-        self.canvas.create_image(0,0, image=self.imageholder["lock"],tags="lock1", anchor="c")
+        self.player2.config(state="disabled")
+        self.canvas.create_image(0,0, image=self.imageholder["lock"],tags="lock1", anchor="c") # Adding lock image
         self.canvas.create_image(0,0,image=self.imageholder["lock"],tags="lock2",anchor="c")
         self.canvas.coords("lock1",785,140)
         self.canvas.coords("lock2",785,160)
