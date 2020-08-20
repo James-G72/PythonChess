@@ -126,6 +126,8 @@ class GameBoard(tk.Frame):
         self.canvas.create_rectangle(self.square_virtual_size*8 + 4,240,self.square_virtual_size*8 + 10+192,400,width=2)
         self.controls_heading = tk.Label(self,text="Controls:",font=("TKDefaultFont",18),bg="bisque")
         self.controls_heading.place(x=self.square_virtual_size*8 + 70, y=255, height=16)
+        self.select_button = tk.Button(self,text="Select Piece",fg="black",background="black",font=("TKDefaultFont",14), command=self.lockselection())
+        self.select_button.place(x=self.square_virtual_size * 8+20,y=265,height=20)
 
         # Binding configuration and left mouse click
         self.canvas.bind("<Button 1>",self.getcoords) # This allows the clicking to be tracked
@@ -141,7 +143,7 @@ class GameBoard(tk.Frame):
         self.selectsquare(x0,y0)
 
     def selectsquare(self, xcoords, ycoords):
-        if self.squarechosen != True:
+        if self.squarechosen == False:
             self.canvas.delete("highlight")
             offset = self.square_virtual_size # This is the number required to make it work......
             col = math.floor(xcoords/offset)
