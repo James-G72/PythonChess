@@ -193,10 +193,6 @@ class GameBoard(tk.Frame):
         self.canvas.create_line(col * offset+offset,row * offset+offset,col * offset+offset,row * offset,fill=colour,width=3,tag=tag)
         self.canvas.create_line(col * offset+offset,row * offset+offset,col * offset,row * offset+offset,fill=colour,width=3,tag=tag)
 
-    def possiblemoves(self,col,row):
-        squares = self.boardarray.loc[row,col].validsquares()
-        return squares
-
     def visualisemoves(self,col,row,piece_code):
         self.canvas.delete("example")
         offset = self.square_virtual_size # This is the number required to make it work......
@@ -204,6 +200,10 @@ class GameBoard(tk.Frame):
         target_squares = self.possiblemoves(col,row)
         for plotter in target_squares:
             self.highlightsquare(int(plotter[0]),int(plotter[1]),"green","example")
+
+    def possiblemoves(self,col,row):
+        squares = self.boardarray.loc[row,col].validsquares()
+        return squares
 
     def addpiece(self, name, image, column=0, row=0):
         # We can add a piece to the board at the requested location
