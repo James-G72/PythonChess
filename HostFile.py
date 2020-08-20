@@ -33,6 +33,9 @@ class GameBoard(tk.Frame):
         self.initiated = False # Has a game started
         self.boardarray = pd.DataFrame(np.zeros((8,8)),index=[0,1,2,3,4,5,6,7],columns=[0,1,2,3,4,5,6,7])
 
+        self.desiredsquare = [] # This is the square that the player wants to move
+        self.squarechosen = False
+
         # Adding all of the pictures from Images folder
         imageholder = {}
         piecelist = "bknpqr"
@@ -119,6 +122,11 @@ class GameBoard(tk.Frame):
         self.start_button = tk.Button(self,text="Start!",fg="green",background="black",font=("TKDefaultFont",30), command=self.initiate)
         self.start_button.place(x=self.square_virtual_size * 8+20,y=196,height=28)
 
+        # Adding controls section to allow the game to be played
+        self.canvas.create_rectangle(self.square_virtual_size*8 + 4,240,self.square_virtual_size*8 + 10+192,400,width=2)
+        self.controls_heading = tk.Label(self,text="Controls:",font=("TKDefaultFont",18),bg="bisque")
+        self.controls_heading.place(x=self.square_virtual_size*8 + 70, y=255, height=16)
+
         # Binding configuration and left mouse click
         self.canvas.bind("<Button 1>",self.getcoords) # This allows the clicking to be tracked
         # If a the user changes the window size then the refresh call is made. This is defined below
@@ -133,32 +141,38 @@ class GameBoard(tk.Frame):
         self.selectsquare(x0,y0)
 
     def selectsquare(self, xcoords, ycoords):
-        self.canvas.delete("highlight")
-        offset = self.square_virtual_size # This is the number required to make it work......
-        col = math.floor(xcoords/offset)
-        row = math.floor(ycoords/offset)
-        if col <= 7 and row <= 7:
-            self.highlightsquare(col,row,"red",'highlight')
-            self.square_text_x.set("Selected Square (x) = "+str(col+1))
-            self.square_text_y.set("Selected Square (y) = "+str(row+1))
-            found_key = []
-            other = self.boardarray.loc[row,col].
-            for key,value in self.pieces.items():
-                if (value == (col,row)):
-                    found_key=key
-            if found_key == []:
-                occupier = "None"
-            else:
-                occupier = self.piece_description[found_key[0]]
-            self.square_text_displaypiece.set("Selected Piece = "+occupier)
+        if self.squarechosen != True:
+            self.canvas.delete("highlight")
+            offset = self.square_virtual_size # This is the number required to make it work......
+            col = math.floor(xcoords/offset)
+            row = math.floor(ycoords/offset)
+            if col <= 7 and row <= 7:
+                self.highlightsquare(col,row,"red",'highlight')
+                self.square_text_x.set("Selected Square (x) = "+str(col+1))
+                self.square_text_y.set("Selected Square (y) = "+str(row+1))
+                found_key = []
+                if self.boardarray.loc[row,col] != 0:
+                    found_key = self.boardarray.loc[row,col].getid()
+                if found_key == []:
+                    occupier = "None"
+                else:
+                    occupier = self.piece_description[found_key[0]]
+                self.square_text_displaypiece.set("Selected Piece = "+occupier)
 
-            if self.initiated and found_key != []: # If a game has been started
-                self.visualisemoves(col,row,found_key)
+                if self.initiated and found_key != []: # If a game has been started
+                    self.visualisemoves(col,row,found_key)
+            else:
+                # If the click is off of the square
+                self.square_text_x.set("Selected Square (x) = None")
+                self.square_text_y.set("Selected Square (y) = None")
+                self.square_text_displaypiece.set("Selected Piece = None")
         else:
-            # If the click is off of the square
-            self.square_text_x.set("Selected Square (x) = None")
-            self.square_text_y.set("Selected Square (y) = None")
-            self.square_text_displaypiece.set("Selected Piece = None")
+            # If the square has been locked
+            self.canvas.delete("example")
+            offset = self.square_virtual_size # This is the number required to make it work......
+            col = math.floor(xcoords/offset)
+            row = math.floor(ycoords/offset)
+            self.highlightsquare(col,row,"orange",'highlight')
 
     def highlightsquare(self,col,row,colour,tag):
         offset = self.square_virtual_size
@@ -309,6 +323,9 @@ class GameBoard(tk.Frame):
         self.canvas.create_image(0,0,image=self.imageholder["lock"],tags="lock2",anchor="c")
         self.canvas.coords("lock1",785,140)
         self.canvas.coords("lock2",785,160)
+
+    def lockselection(self):
+        self.squarechosen = True
 
     def refresh(self, event):
         '''Redraw the board, possibly in response to window being resized'''
