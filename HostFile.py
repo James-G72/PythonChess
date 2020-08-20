@@ -9,6 +9,7 @@ import tkinter as tk
 import center_tk_window as ctw
 import time
 import math
+# Importing the custom chess piece classes
 import ChessPieces
 
 # -----------------------  Section 1  -----------------------
@@ -30,8 +31,7 @@ class GameBoard(tk.Frame):
         self.piece_description = {}
         self.square_virtual_size = 77
         self.initiated = False # Has a game started
-        self.piece_index = pd.read_pickle("/Users/jamesgower2/Loughborough University/TSteffenProjects - James/PythonChess/initial_board.pkl") # Tracks all the pieces on the board
-        self.boardrow = 0 # This tracks what row we're on
+        self.boardarray = pd.DataFrame(np.zeros((8,8)),index=[0,1,2,3,4,5,6,7],columns=[0,1,2,3,4,5,6,7])
 
         # Adding all of the pictures from Images folder
         imageholder = {}
@@ -137,7 +137,7 @@ class GameBoard(tk.Frame):
         offset = self.square_virtual_size # This is the number required to make it work......
         squarex = math.floor(xcoord/offset)
         squarey = math.floor(ycoord/offset)
-        if squarex <=7 and squarey <=7:
+        if squarex <= 7 and squarey <= 7:
             self.highlightsquare(squarex,squarey,"red",'highlight')
             self.square_text_x.set("Selected Square (x) = "+str(squarex+1))
             self.square_text_y.set("Selected Square (y) = "+str(squarey+1))
@@ -162,7 +162,7 @@ class GameBoard(tk.Frame):
     def highlightsquare(self,squarex,squarey,colour,tag):
         offset = self.square_virtual_size
         if colour == "green":
-            colour = "#00cc00"
+            colour = "#00cc00" # This is just a lighter green than the standard "green" color to make it clearer on the board
         self.canvas.create_line(squarex * offset,squarey * offset,squarex * offset+offset,squarey * offset,fill=colour,width=3,tag=tag)
         self.canvas.create_line(squarex * offset,squarey * offset,squarex * offset,squarey * offset+offset,fill=colour,width=3,tag=tag)
         self.canvas.create_line(squarex * offset+offset,squarey * offset+offset,squarex * offset+offset,squarey * offset,fill=colour,width=3,tag=tag)
@@ -170,22 +170,7 @@ class GameBoard(tk.Frame):
 
     def possiblemoves(self,squarex,squarey,piece_code):
         returnlist = []
-        # Valid square calculations for the pawn which is the most irregular
-        if piece_code[0] == "p" or piece_code[0] == "P":
-            moves = self.piece_index.loc[:,piece_code]
-            if moves[0] == moves[self.boardrow-1]: # Special case for the first time a pawn is moved
-                doublemove = True
-                factor = 2
-            if piece_code[0] == "p":
-                returnlist.append(str(squarex)+str(squarey+factor))
-            else:
-                returnlist.append(str(squarex)+str(squarey-factor))
-            return returnlist
-        elif piece_code[0] == "r" or piece_code[0] == "R":
-            # Check all the possible directions
-            return []
-        else:
-            return ["33",'44']
+
 
         # def checksquare(color,)
 
@@ -201,7 +186,6 @@ class GameBoard(tk.Frame):
         # We can add a piece to the board at the requested location
         # This hijacks the function below by creating the specified piece first
         self.canvas.create_image(0,0, image=image, tags=(name, "piece"), anchor="c")
-        self.piece_index.loc[self.boardrow,name] = str(column)+str(row)
         self.placepiece(name, row, column)
 
     def removepiece(self, name):
@@ -223,37 +207,69 @@ class GameBoard(tk.Frame):
         for x in keylist:
             self.removepiece(x)
 
-        # Then we add in pieces 1 by 1
+        # Then we add in pieces 1 by 1 and create the objects to store in boardarray
         # Castles
         self.addpiece("r1",self.imageholder["r"],0,0)
+        r1 = ChessPieces.Rook("r1")
+        self.boardarray.loc[0,0] = r1
         self.addpiece("r2",self.imageholder["r"],0,7)
+        r2 = ChessPieces.Rook("r2")
+        self.boardarray.loc[0,7] = r2
         self.addpiece("R1",self.imageholder["R"],7,0)
+        R1 = ChessPieces.Rook("R1")
+        self.boardarray.loc[7,0] = R1
         self.addpiece("R2",self.imageholder["R"],7,7)
+        R2 = ChessPieces.Rook("R2")
+        self.boardarray.loc[7,7] = R2
         # Naves
         self.addpiece("n1",self.imageholder["n"],0,1)
+        n1 = ChessPieces.Knight("n1")
+        self.boardarray.loc[0,1] = n1
         self.addpiece("n2",self.imageholder["n"],0,6)
+        n2 = ChessPieces.Knight("n2")
+        self.boardarray.loc[0,6] = n2
         self.addpiece("N1",self.imageholder["N"],7,1)
+        N1 = ChessPieces.Knight("N1")
+        self.boardarray.loc[7,1] = N1
         self.addpiece("N2",self.imageholder["N"],7,6)
+        N2 = ChessPieces.Knight("N2")
+        self.boardarray.loc[7,6] = N2
         # Bishops
         self.addpiece("b1",self.imageholder["b"],0,2)
+        b1 = ChessPieces.Bishop("b1")
+        self.boardarray.loc[0,2] = b1
         self.addpiece("b2",self.imageholder["b"],0,5)
+        b2 = ChessPieces.Bishop("b2")
+        self.boardarray.loc[0,5] = b2
         self.addpiece("B1",self.imageholder["B"],7,2)
+        B1 = ChessPieces.Bishop("B1")
+        self.boardarray.loc[7,2] = B1
         self.addpiece("B2",self.imageholder["B"],7,5)
+        B2 = ChessPieces.Bishop("B2")
+        self.boardarray.loc[7,5] = B2
         # Queens
         self.addpiece("q1",self.imageholder["q"],0,3)
+        q1 = ChessPieces.Queen("q1")
+        self.boardarray.loc[0,3] = q1
         self.addpiece("Q1",self.imageholder["Q"],7,3)
+        Q1 = ChessPieces.Queen("Q1")
+        self.boardarray.loc[7,3] = Q1
         # Kings
         self.addpiece("k1",self.imageholder["k"],0,4)
+        k1 = ChessPieces.King("k1")
+        self.boardarray.loc[0,4] = k1
         self.addpiece("K1",self.imageholder["K"],7,4)
-        # Pawns - This can easily be looped
+        K1 = ChessPieces.King("K1")
+        self.boardarray.loc[7,4] = K1
+        # Pawns
         for x in range(0,8):
             self.addpiece("p"+str(x+1),self.imageholder["p"],1,x)
             self.addpiece("P"+str(x+1),self.imageholder["P"],6,x)
 
         self.player1.config(state="normal")  # Enabling the dropdown options
-        self.player2.config(state="normal")  # Enabling the dropdown options
-        self.canvas.delete("lock1") # Removing the lock symbol
-        self.canvas.delete("lock2") # Removing the lock symbol
+        self.player2.config(state="normal")
+        self.canvas.delete("lock1") # Removing the lock symbol if its there
+        self.canvas.delete("lock2")
         self.initiated = False # Essentially saying that the game is no longer active
 
     def initiate(self):
@@ -264,9 +280,8 @@ class GameBoard(tk.Frame):
         self.player2.config(state="disabled")  # Disabling the dropdown options
         self.canvas.create_image(0,0, image=self.imageholder["lock"],tags="lock1", anchor="c")
         self.canvas.create_image(0,0,image=self.imageholder["lock"],tags="lock2",anchor="c")
-        self.canvas.coords("lock1",775,140)
+        self.canvas.coords("lock1",785,140)
         self.canvas.coords("lock2",785,160)
-        self.boardrow += 1
 
     def refresh(self, event):
         '''Redraw the board, possibly in response to window being resized'''
