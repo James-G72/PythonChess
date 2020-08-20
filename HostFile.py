@@ -203,10 +203,10 @@ class GameBoard(tk.Frame):
 
         # Adding in pieces 1 by 1 and create the objects to store in boardarray
         # Castles
-        r1 = ChessPieces.Rook("r1")
-        r2 = ChessPieces.Rook("r2")
-        R1 = ChessPieces.Rook("R1")
-        R2 = ChessPieces.Rook("R2")
+        r1 = ChessPieces.Rook("r1",0,0)
+        r2 = ChessPieces.Rook("r2",0,7)
+        R1 = ChessPieces.Rook("R1",7,0)
+        R2 = ChessPieces.Rook("R2",7,7)
         self.addpiece("r1",self.imageholder["r"],0,0)
         self.boardarray.loc[0,0] = r1
         self.addpiece("r2",self.imageholder["r"],0,7)
@@ -216,10 +216,10 @@ class GameBoard(tk.Frame):
         self.addpiece("R2",self.imageholder["R"],7,7)
         self.boardarray.loc[7,7] = R2
         # Naves
-        n1 = ChessPieces.Knight("n1")
-        n2 = ChessPieces.Knight("n2")
-        N1 = ChessPieces.Knight("N1")
-        N2 = ChessPieces.Knight("N2")
+        n1 = ChessPieces.Knight("n1",0,1)
+        n2 = ChessPieces.Knight("n2",0,6)
+        N1 = ChessPieces.Knight("N1",7,1)
+        N2 = ChessPieces.Knight("N2",7,6)
         self.addpiece("n1",self.imageholder["n"],0,1)
         self.boardarray.loc[0,1] = n1
         self.addpiece("n2",self.imageholder["n"],0,6)
@@ -229,10 +229,10 @@ class GameBoard(tk.Frame):
         self.addpiece("N2",self.imageholder["N"],7,6)
         self.boardarray.loc[7,6] = N2
         # Bishops
-        b1 = ChessPieces.Bishop("b1")
-        b2 = ChessPieces.Bishop("b2")
-        B1 = ChessPieces.Bishop("B1")
-        B2 = ChessPieces.Bishop("B2")
+        b1 = ChessPieces.Bishop("b1",0,2)
+        b2 = ChessPieces.Bishop("b2",0,5)
+        B1 = ChessPieces.Bishop("B1",7,2)
+        B2 = ChessPieces.Bishop("B2",7,5)
         self.addpiece("b1",self.imageholder["b"],0,2)
         self.boardarray.loc[0,2] = b1
         self.addpiece("b2",self.imageholder["b"],0,5)
@@ -242,15 +242,15 @@ class GameBoard(tk.Frame):
         self.addpiece("B2",self.imageholder["B"],7,5)
         self.boardarray.loc[7,5] = B2
         # Queens
-        q1 = ChessPieces.Queen("q1")
-        Q1 = ChessPieces.Queen("Q1")
+        q1 = ChessPieces.Queen("q1",0,3)
+        Q1 = ChessPieces.Queen("Q1",7,3)
         self.addpiece("q1",self.imageholder["q"],0,3)
         self.boardarray.loc[0,3] = q1
         self.addpiece("Q1",self.imageholder["Q"],7,3)
         self.boardarray.loc[7,3] = Q1
         # Kings
-        k1 = ChessPieces.King("k1")
-        K1 = ChessPieces.King("K1")
+        k1 = ChessPieces.King("k1",0,4)
+        K1 = ChessPieces.King("K1",7,4)
         self.addpiece("k1",self.imageholder["k"],0,4)
         self.boardarray.loc[0,4] = k1
         self.addpiece("K1",self.imageholder["K"],7,4)

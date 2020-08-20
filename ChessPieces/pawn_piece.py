@@ -4,7 +4,7 @@ import numpy as np
 class Pawn():
     def __init__(self,piece_id,row,col):
         # Initialising the piece
-        self.moves = 0 # Hasn't been moved (this is most useful for the pawns)
+        self.turns = 0 # Hasn't been moved (this is most useful for the pawns)
         self.type = piece_id[0] # pnkbqrPNKBQR
         self.id = piece_id[1] # Number
         if self.type.isupper():
