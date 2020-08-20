@@ -36,6 +36,7 @@ class GameBoard(tk.Frame):
         self.desiredsquare = [] # This is the square that the player wants to move
         self.squarechosen = False
         self.validclick = False
+        self.movesquare = []
 
         # Adding all of the pictures from Images folder
         imageholder = {}
@@ -127,12 +128,14 @@ class GameBoard(tk.Frame):
         self.canvas.create_rectangle(self.square_virtual_size*8 + 4,240,self.square_virtual_size*8 + 10+192,400,width=2)
         self.controls_heading = tk.Label(self,text="Controls:",font=("TKDefaultFont",18),bg="bisque")
         self.controls_heading.place(x=self.square_virtual_size*8 + 70, y=255, height=16)
-        self.select_button = tk.Button(self,text="Select Piece",fg="black",background="black",font=("TKDefaultFont",14), command=self.lockselection)
+        self.selectbuttonstring = tk.StringVar()
+        self.selectbuttonstring.set("Select Piece")
+        self.select_button = tk.Button(self,textvariable=self.selectbuttonstring,fg="black",background="black",font=("TKDefaultFont",14), command=self.lockselection)
         self.select_button.place(x=self.square_virtual_size * 8+20,y=285,height=20)
         self.square_text_displaypiece_bybutton = tk.StringVar()
         self.square_text_displaypiece_bybutton.set("None")
         self.selected_displaypiece_bybutton = tk.Label(self,textvariable=self.square_text_displaypiece_bybutton,bg="bisque")
-        self.selected_displaypiece_bybutton.place(x=self.square_virtual_size * 8+115,y=285,height=16)
+        self.selected_displaypiece_bybutton.place(x=self.square_virtual_size * 8+118,y=285,height=16)
 
         # Binding configuration and left mouse click
         self.canvas.bind("<Button 1>",self.getcoords) # This allows the clicking to be tracked
@@ -166,6 +169,7 @@ class GameBoard(tk.Frame):
                 else:
                     occupier = self.piece_description[found_key[0]]
                     self.validclick = True
+                self.desiredsquare = [col,row]
                 self.square_text_displaypiece.set("Selected Piece = "+occupier)
                 self.square_text_displaypiece_bybutton.set(occupier)
 
@@ -178,11 +182,15 @@ class GameBoard(tk.Frame):
                 self.square_text_displaypiece.set("Selected Piece = None")
         else:
             # If the square has been locked
-            self.canvas.delete("example")
             offset = self.square_virtual_size # This is the number required to make it work......
             col = math.floor(xcoords/offset)
             row = math.floor(ycoords/offset)
-            self.highlightsquare(col,row,"orange",'highlight')
+            target_squares = self.possiblemoves(self.desiredsquare[0],self.desiredsquare[1])
+            for plotter in target_squares:
+                if plotter[0] == str(col) and plotter [1] == str(row):
+                    self.canvas.delete("move")
+                    self.highlightsquare(col,row,"orange",'move')
+                    self.movesquare = [col,row]
 
     def highlightsquare(self,col,row,colour,tag):
         offset = self.square_virtual_size
@@ -335,9 +343,14 @@ class GameBoard(tk.Frame):
         self.canvas.coords("lock2",785,160)
 
     def lockselection(self):
-        if self.validclick:
+        if self.validclick and self.squarechosen == False:
             self.squarechosen = True
+            self.selectbuttonstring.set("Deselect Piece")
             self.selected_displaypiece_bybutton.config(background="green")
+        elif self.squarechosen:
+            self.squarechosen = False
+            self.selectbuttonstring.set("Select Piece")
+            self.selected_displaypiece_bybutton.config(background="bisque")
         else:
             return
 
