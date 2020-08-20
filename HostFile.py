@@ -132,19 +132,15 @@ class GameBoard(tk.Frame):
         y0 = event.y
         # This retrives the curreny x and y coordinates in terms of pixels from the top left
         # I am not sure if this is specific to mine but there is 77 pixels per square
-        self.highlightsquare(x0,y0)
+        self.selectsquare(x0,y0)
 
-    def highlightsquare(self, xcoord, ycoord):
+    def selectsquare(self, xcoord, ycoord):
         self.canvas.delete("highlight")
         offset = self.square_virtual_size # This is the number required to make it work......
         squarex = math.floor(xcoord/offset)
         squarey = math.floor(ycoord/offset)
         if squarex <=7 and squarey <=7:
-            self.selectedsquare = [squarex,squarey]
-            self.canvas.create_line(squarex*offset,squarey*offset,squarex*offset+offset,squarey*offset,fill='red',width=3,tag="highlight")
-            self.canvas.create_line(squarex*offset,squarey*offset,squarex*offset,squarey*offset+offset,fill='red',width=3,tag="highlight")
-            self.canvas.create_line(squarex*offset+offset,squarey*offset+offset,squarex*offset+offset,squarey*offset,fill='red',width=3,tag="highlight")
-            self.canvas.create_line(squarex*offset+offset,squarey*offset+offset,squarex*offset,squarey*offset+offset,fill='red',width=3,tag="highlight")
+            self.highlightsquare(squarex,squarey,"red",'highlight')
             self.square_text_x.set("Selected Square (x) = "+str(squarex+1))
             self.square_text_y.set("Selected Square (y) = "+str(squarey+1))
             found_key = []
@@ -165,6 +161,15 @@ class GameBoard(tk.Frame):
             self.square_text_y.set("Selected Square (y) = None")
             self.square_text_displaypiece.set("Selected Piece = None")
 
+    def highlightsquare(self,squarex,squarey,colour,tag):
+        offset = self.square_virtual_size
+        if colour == "green":
+            colour = "#00cc00"
+        self.canvas.create_line(squarex * offset,squarey * offset,squarex * offset+offset,squarey * offset,fill=colour,width=3,tag=tag)
+        self.canvas.create_line(squarex * offset,squarey * offset,squarex * offset,squarey * offset+offset,fill=colour,width=3,tag=tag)
+        self.canvas.create_line(squarex * offset+offset,squarey * offset+offset,squarex * offset+offset,squarey * offset,fill=colour,width=3,tag=tag)
+        self.canvas.create_line(squarex * offset+offset,squarey * offset+offset,squarex * offset,squarey * offset+offset,fill=colour,width=3,tag=tag)
+
     def possiblemoves(self,squarex,squarey,piece_code):
         returnlist = []
         # Valid square calculations for the pawn which is the most irregular
@@ -172,6 +177,7 @@ class GameBoard(tk.Frame):
             moves = self.piece_index.loc[:,piece_code]
             if moves[0] == moves[self.boardrow-1]: # Special case for the first time a pawn is moved
                 doublemove = True
+                factor = 2
             if piece_code[0] == "p":
                 returnlist.append(str(squarex)+str(squarey+factor))
             else:
@@ -179,12 +185,11 @@ class GameBoard(tk.Frame):
             return returnlist
         elif piece_code[0] == "r" or piece_code[0] == "R":
             # Check all the possible directions
-            if self.piece_index.loc[self.boardrow-1,]
             return []
         else:
             return ["33",'44']
 
-        def checksquare(color,)
+        # def checksquare(color,)
 
     def visualisemoves(self,squarex,squarey,piece_code):
         self.canvas.delete("example")
@@ -194,13 +199,11 @@ class GameBoard(tk.Frame):
         if piece_code[0] == "n" or piece_code[0] == "N":
             # Taking into account the the way a knight moves indirectly
             for plotter in target_squares:
-                self.canvas.create_line(squarex*offset+math.floor(offset/2),squarey*offset+math.floor(offset/2),int(plotter[0])*offset+math.floor(offset/2),squarey*offset*factor+math.floor(offset/2),fill='green',width=2,tag="example")
-                self.canvas.create_line(int(plotter[0])*offset+math.floor(offset/2),squarey*offset*factor+math.floor(offset/2),int(plotter[0]) * offset+math.floor(offset / 2),int(plotter[1]) * offset * factor+math.floor(offset / 2),fill='green',width=2,tag="example")
+                self.highlightsquare(int(plotter[0]),int(plotter[1]),"green","example")
         else:
             # All other pieces can be a straight line
             for plotter in target_squares:
-                self.canvas.create_line(squarex*offset+math.floor(offset/2),squarey*offset+math.floor(offset/2),int(plotter[0])*offset+math.floor(offset/2),int(plotter[1])*offset*factor+math.floor(offset/2),fill='green',width=2,tag="example")
-
+                self.highlightsquare(int(plotter[0]),int(plotter[1]),"green","example")
 
     def addpiece(self, name, image, column=0, row=0):
         # We can add a piece to the board at the requested location
@@ -293,6 +296,19 @@ class GameBoard(tk.Frame):
             self.placepiece(name, self.pieces[name][0], self.pieces[name][1])
         self.canvas.tag_raise("piece")
         self.canvas.tag_lower("square")
+
+# Having done some research it is recommended to store the logic and information for moves in a pieces class
+class ChessPiece():
+    def __init__(self,piece_id):
+        self.id = piece_id
+        self.check = False
+        self.moves = pd.DataFrame(np.zeros((8,8)),index=[0,1,2,3,4,5,6,7],columns=[0,1,2,3,4,5,6,7])
+
+        # Now we set the default positions of the piece depending on what type it is at the start of the game
+        if self.id == "p" or self.id == "P": # Then it is a pawn
+            t = 1
+
+
 
 # -----------------------  Section 2  -----------------------
 # Initialising the board
