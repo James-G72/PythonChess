@@ -132,18 +132,18 @@ class GameBoard(tk.Frame):
         # I am not sure if this is specific to mine but there is 77 pixels per square
         self.selectsquare(x0,y0)
 
-    def selectsquare(self, xcoord, ycoord):
+    def selectsquare(self, col, row):
         self.canvas.delete("highlight")
         offset = self.square_virtual_size # This is the number required to make it work......
-        squarex = math.floor(xcoord/offset)
-        squarey = math.floor(ycoord/offset)
-        if squarex <= 7 and squarey <= 7:
-            self.highlightsquare(squarex,squarey,"red",'highlight')
-            self.square_text_x.set("Selected Square (x) = "+str(squarex+1))
-            self.square_text_y.set("Selected Square (y) = "+str(squarey+1))
+        col = math.floor(col/offset)
+        row = math.floor(row/offset)
+        if col <= 7 and row <= 7:
+            self.highlightsquare(col,row,"red",'highlight')
+            self.square_text_x.set("Selected Square (x) = "+str(col+1))
+            self.square_text_y.set("Selected Square (y) = "+str(row+1))
             found_key = []
             for key,value in self.pieces.items():
-                if (value == (squarex,squarey)):
+                if (value == (col,row)):
                     found_key=key
             if found_key == []:
                 occupier = "None"
@@ -152,30 +152,31 @@ class GameBoard(tk.Frame):
             self.square_text_displaypiece.set("Selected Piece = "+occupier)
 
             if self.initiated and found_key != []: # If a game has been started
-                self.visualisemoves(squarex,squarey,found_key)
+                self.visualisemoves(col,row,found_key)
         else:
             # If the click is off of the square
             self.square_text_x.set("Selected Square (x) = None")
             self.square_text_y.set("Selected Square (y) = None")
             self.square_text_displaypiece.set("Selected Piece = None")
 
-    def highlightsquare(self,squarex,squarey,colour,tag):
+    def highlightsquare(self,col,row,colour,tag):
         offset = self.square_virtual_size
         if colour == "green":
             colour = "#00cc00" # This is just a lighter green than the standard "green" color to make it clearer on the board
-        self.canvas.create_line(squarex * offset,squarey * offset,squarex * offset+offset,squarey * offset,fill=colour,width=3,tag=tag)
-        self.canvas.create_line(squarex * offset,squarey * offset,squarex * offset,squarey * offset+offset,fill=colour,width=3,tag=tag)
-        self.canvas.create_line(squarex * offset+offset,squarey * offset+offset,squarex * offset+offset,squarey * offset,fill=colour,width=3,tag=tag)
-        self.canvas.create_line(squarex * offset+offset,squarey * offset+offset,squarex * offset,squarey * offset+offset,fill=colour,width=3,tag=tag)
+        self.canvas.create_line(col * offset,row * offset,col * offset+offset,row * offset,fill=colour,width=3,tag=tag)
+        self.canvas.create_line(col * offset,row * offset,col * offset,row * offset+offset,fill=colour,width=3,tag=tag)
+        self.canvas.create_line(col * offset+offset,row * offset+offset,col * offset+offset,row * offset,fill=colour,width=3,tag=tag)
+        self.canvas.create_line(col * offset+offset,row * offset+offset,col * offset,row * offset+offset,fill=colour,width=3,tag=tag)
 
-    def possiblemoves(self,squarex,squarey):
-        self.boardarray.loc[squarey,squarex].updatemoves(squarex,squarey,self.boardarray)
+    def possiblemoves(self,col,row):
+        squares = self.boardarray.loc[row,col].validsquares()
+        return squares
 
-    def visualisemoves(self,squarex,squarey,piece_code):
+    def visualisemoves(self,col,row,piece_code):
         self.canvas.delete("example")
         offset = self.square_virtual_size # This is the number required to make it work......
         factor = 1 # This accounts for the double move on a pawns first turn
-        target_squares = self.possiblemoves(squarex,squarey,piece_code)
+        target_squares = self.possiblemoves(col,row)
         for plotter in target_squares:
             self.highlightsquare(int(plotter[0]),int(plotter[1]),"green","example")
 
@@ -255,22 +256,22 @@ class GameBoard(tk.Frame):
         self.addpiece("K1",self.imageholder["K"],7,4)
         self.boardarray.loc[7,4] = K1
         # Pawns
-        p1 = ChessPieces.Pawn("p1")
-        p2 = ChessPieces.Pawn("p2")
-        p3 = ChessPieces.Pawn("p3")
-        p4 = ChessPieces.Pawn("p4")
-        p5 = ChessPieces.Pawn("p5")
-        p6 = ChessPieces.Pawn("p6")
-        p7 = ChessPieces.Pawn("p7")
-        p8 = ChessPieces.Pawn("p8")
-        P1 = ChessPieces.Pawn("P1")
-        P2 = ChessPieces.Pawn("P2")
-        P3 = ChessPieces.Pawn("P3")
-        P4 = ChessPieces.Pawn("P4")
-        P5 = ChessPieces.Pawn("P5")
-        P6 = ChessPieces.Pawn("P6")
-        P7 = ChessPieces.Pawn("P7")
-        P8 = ChessPieces.Pawn("P8")
+        p1 = ChessPieces.Pawn("p1",1,0)
+        p2 = ChessPieces.Pawn("p2",1,1)
+        p3 = ChessPieces.Pawn("p3",1,2)
+        p4 = ChessPieces.Pawn("p4",1,3)
+        p5 = ChessPieces.Pawn("p5",1,4)
+        p6 = ChessPieces.Pawn("p6",1,5)
+        p7 = ChessPieces.Pawn("p7",1,6)
+        p8 = ChessPieces.Pawn("p8",1,7)
+        P1 = ChessPieces.Pawn("P1",6,0)
+        P2 = ChessPieces.Pawn("P2",6,1)
+        P3 = ChessPieces.Pawn("P3",6,2)
+        P4 = ChessPieces.Pawn("P4",6,3)
+        P5 = ChessPieces.Pawn("P5",6,4)
+        P6 = ChessPieces.Pawn("P6",6,5)
+        P7 = ChessPieces.Pawn("P7",6,6)
+        P8 = ChessPieces.Pawn("P8",6,7)
         for x in range(0,8):
             self.addpiece("p"+str(x+1),self.imageholder["p"],1,x)
             self.addpiece("P"+str(x+1),self.imageholder["P"],6,x)
