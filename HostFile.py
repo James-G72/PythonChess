@@ -157,6 +157,9 @@ class GameBoard(tk.Frame):
             col = math.floor(xcoords/offset)
             row = math.floor(ycoords/offset)
             if col <= 7 and row <= 7:
+                self.canvas.delete("move")
+                self.canvas.delete("highlight")
+                self.canvas.delete("example")
                 self.highlightsquare(col,row,"red",'highlight')
                 self.square_text_x.set("Selected Square (x) = "+str(col+1))
                 self.square_text_y.set("Selected Square (y) = "+str(row+1))
