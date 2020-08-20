@@ -130,12 +130,15 @@ class GameBoard(tk.Frame):
         self.controls_heading.place(x=self.square_virtual_size*8 + 70, y=255, height=16)
         self.selectbuttonstring = tk.StringVar()
         self.selectbuttonstring.set("Select Piece")
-        self.select_button = tk.Button(self,textvariable=self.selectbuttonstring,fg="black",background="black",font=("TKDefaultFont",14), command=self.lockselection)
+        self.select_button = tk.Button(self,textvariable=self.selectbuttonstring,fg="black",background="black",font=("TKDefaultFont",12), command=self.lockselection)
         self.select_button.place(x=self.square_virtual_size * 8+20,y=285,height=20)
         self.square_text_displaypiece_bybutton = tk.StringVar()
         self.square_text_displaypiece_bybutton.set("None")
         self.selected_displaypiece_bybutton = tk.Label(self,textvariable=self.square_text_displaypiece_bybutton,bg="bisque")
         self.selected_displaypiece_bybutton.place(x=self.square_virtual_size * 8+118,y=285,height=16)
+        self.move_button = tk.Button(self,textvariable="Move Piece",fg="black",background="black",font=("TKDefaultFont",25), command=self.movepiece)
+        self.move_button.place(x=self.square_virtual_size * 8+20,y=300,height=20)
+        self.movebutton.config(status="Disabled")
 
         # Binding configuration and left mouse click
         self.canvas.bind("<Button 1>",self.getcoords) # This allows the clicking to be tracked
@@ -148,7 +151,8 @@ class GameBoard(tk.Frame):
         y0 = event.y
         # This retrieves the current x and y coordinates in terms of pixels from the top left
         # I am not sure if this is specific to mine but there is 77 pixels per square
-        self.selectsquare(x0,y0)
+        if self.initiated:
+            self.selectsquare(x0,y0)
 
     def selectsquare(self, xcoords, ycoords):
         if self.squarechosen == False:
@@ -356,6 +360,9 @@ class GameBoard(tk.Frame):
             self.selected_displaypiece_bybutton.config(background="bisque")
         else:
             return
+
+    def movepiece(self):
+        t=1
 
     def refresh(self, event):
         '''Redraw the board, possibly in response to window being resized'''
