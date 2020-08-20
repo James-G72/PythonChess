@@ -144,8 +144,8 @@ class DrawChessPosition(object):
         for x in range(0,len(black_pieces)):
             black_index = black_pieces[x]
             white_index = white_pieces[x]
-            piece_images[black_index] = image.open('Pieces/'+black_index+'b.png')
-            piece_images[white_index] = image.open('Pieces/'+black_index+'w.png')
+            piece_images[black_index] = image.open('Images/'+black_index+'b.png')
+            piece_images[white_index] = image.open('Images/'+black_index+'w.png')
         piece_sizes = set(piece.size for piece in piece_images.values())
         # Sanity check: the pieces should all be the same size
         assert len(piece_sizes) == 1

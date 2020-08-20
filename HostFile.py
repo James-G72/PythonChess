@@ -9,10 +9,10 @@ import tkinter as tk
 import center_tk_window as ctw
 import time
 import math
+import ChessPieces
 
 # -----------------------  Section 1  -----------------------
 # Defining the GameBoard class and all functionality required to interact with the board
-
 
 class GameBoard(tk.Frame):
     def __init__(self, parent, side_size, square_size=80, rows=8, columns=8, color1="#ffffff", color2="#474747"):
@@ -33,19 +33,19 @@ class GameBoard(tk.Frame):
         self.piece_index = pd.read_pickle("/Users/jamesgower2/Loughborough University/TSteffenProjects - James/PythonChess/initial_board.pkl") # Tracks all the pieces on the board
         self.boardrow = 0 # This tracks what row we're on
 
-        # Adding all of the pictures from Pieces folder
+        # Adding all of the pictures from Images folder
         imageholder = {}
         piecelist = "bknpqr"
         colorlist = "bw"
         for f in piecelist:
             for l in colorlist:
-                with open("Pieces/"+f+l+".gif","rb") as imageFile:
+                with open("Images/"+f+l+".gif","rb") as imageFile:
                     string = base64.b64encode(imageFile.read())
                 if l == "w":
                     imageholder[f.capitalize()] = tk.PhotoImage(data=string)
                 else:
                     imageholder[f] = tk.PhotoImage(data=string)
-        with open("Pieces/lock.gif","rb") as imageFile:
+        with open("Images/lock.gif","rb") as imageFile:
             string = base64.b64encode(imageFile.read())
         imageholder["lock"] = tk.PhotoImage(data=string)
         self.imageholder = imageholder
@@ -63,7 +63,6 @@ class GameBoard(tk.Frame):
         self.piece_description["Q"] = "White Queen"
         self.piece_description["p"] = "Black Pawn"
         self.piece_description["P"] = "White Pawn"
-
 
         # Assumed as square but can be other
         c_width = columns * self.size
@@ -120,7 +119,6 @@ class GameBoard(tk.Frame):
         self.start_button = tk.Button(self,text="Start!",fg="green",background="black",font=("TKDefaultFont",30), command=self.initiate)
         self.start_button.place(x=self.square_virtual_size * 8+20,y=196,height=28)
 
-
         # Binding configuration and left mouse click
         self.canvas.bind("<Button 1>",self.getcoords) # This allows the clicking to be tracked
         # If a the user changes the window size then the refresh call is made. This is defined below
@@ -130,7 +128,7 @@ class GameBoard(tk.Frame):
         global x0,y0
         x0 = event.x
         y0 = event.y
-        # This retrives the curreny x and y coordinates in terms of pixels from the top left
+        # This retrieves the current x and y coordinates in terms of pixels from the top left
         # I am not sure if this is specific to mine but there is 77 pixels per square
         self.selectsquare(x0,y0)
 
@@ -196,14 +194,8 @@ class GameBoard(tk.Frame):
         offset = self.square_virtual_size # This is the number required to make it work......
         factor = 1 # This accouts for the double move on a pawns first turn
         target_squares = self.possiblemoves(squarex,squarey,piece_code)
-        if piece_code[0] == "n" or piece_code[0] == "N":
-            # Taking into account the the way a knight moves indirectly
-            for plotter in target_squares:
-                self.highlightsquare(int(plotter[0]),int(plotter[1]),"green","example")
-        else:
-            # All other pieces can be a straight line
-            for plotter in target_squares:
-                self.highlightsquare(int(plotter[0]),int(plotter[1]),"green","example")
+        for plotter in target_squares:
+            self.highlightsquare(int(plotter[0]),int(plotter[1]),"green","example")
 
     def addpiece(self, name, image, column=0, row=0):
         # We can add a piece to the board at the requested location
@@ -296,19 +288,6 @@ class GameBoard(tk.Frame):
             self.placepiece(name, self.pieces[name][0], self.pieces[name][1])
         self.canvas.tag_raise("piece")
         self.canvas.tag_lower("square")
-
-# Having done some research it is recommended to store the logic and information for moves in a pieces class
-class ChessPiece():
-    def __init__(self,piece_id):
-        self.id = piece_id
-        self.check = False
-        self.moves = pd.DataFrame(np.zeros((8,8)),index=[0,1,2,3,4,5,6,7],columns=[0,1,2,3,4,5,6,7])
-
-        # Now we set the default positions of the piece depending on what type it is at the start of the game
-        if self.id == "p" or self.id == "P": # Then it is a pawn
-            t = 1
-
-
 
 # -----------------------  Section 2  -----------------------
 # Initialising the board

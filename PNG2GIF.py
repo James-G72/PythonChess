@@ -1,7 +1,7 @@
 from PIL import Image
 target = "bb"
 
-im = Image.open("Pieces/"+target+'.png')
+im = Image.open("Images/"+target+'.png')
 # Get the alpha band
 alpha = im.split()[3]
 # Convert the image into P mode but only use 255 colors in the palette out of 256
@@ -12,4 +12,4 @@ mask = Image.eval(alpha, lambda a: 255 if a <=128 else 0)
 # Paste the color of index 255 and use alpha as a mask
 im.paste(255, mask)
 # The transparency index is 255
-im.save("Pieces/"+target+'.gif', transparency=255)
+im.save("Images/"+target+'.gif', transparency=255)

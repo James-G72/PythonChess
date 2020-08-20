@@ -1,0 +1,1 @@
+from .king_piece import King
