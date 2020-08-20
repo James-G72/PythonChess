@@ -35,6 +35,7 @@ class GameBoard(tk.Frame):
 
         self.desiredsquare = [] # This is the square that the player wants to move
         self.squarechosen = False
+        self.validclick = False
 
         # Adding all of the pictures from Images folder
         imageholder = {}
@@ -126,8 +127,12 @@ class GameBoard(tk.Frame):
         self.canvas.create_rectangle(self.square_virtual_size*8 + 4,240,self.square_virtual_size*8 + 10+192,400,width=2)
         self.controls_heading = tk.Label(self,text="Controls:",font=("TKDefaultFont",18),bg="bisque")
         self.controls_heading.place(x=self.square_virtual_size*8 + 70, y=255, height=16)
-        self.select_button = tk.Button(self,text="Select Piece",fg="black",background="black",font=("TKDefaultFont",14), command=self.lockselection())
-        self.select_button.place(x=self.square_virtual_size * 8+20,y=265,height=20)
+        self.select_button = tk.Button(self,text="Select Piece",fg="black",background="black",font=("TKDefaultFont",14), command=self.lockselection)
+        self.select_button.place(x=self.square_virtual_size * 8+20,y=285,height=20)
+        self.square_text_displaypiece_bybutton = tk.StringVar()
+        self.square_text_displaypiece_bybutton.set("None")
+        self.selected_displaypiece_bybutton = tk.Label(self,textvariable=self.square_text_displaypiece_bybutton,bg="bisque")
+        self.selected_displaypiece_bybutton.place(x=self.square_virtual_size * 8+115,y=285,height=16)
 
         # Binding configuration and left mouse click
         self.canvas.bind("<Button 1>",self.getcoords) # This allows the clicking to be tracked
@@ -157,9 +162,12 @@ class GameBoard(tk.Frame):
                     found_key = self.boardarray.loc[row,col].getid()
                 if found_key == []:
                     occupier = "None"
+                    self.validclick = False
                 else:
                     occupier = self.piece_description[found_key[0]]
+                    self.validclick = True
                 self.square_text_displaypiece.set("Selected Piece = "+occupier)
+                self.square_text_displaypiece_bybutton.set(occupier)
 
                 if self.initiated and found_key != []: # If a game has been started
                     self.visualisemoves(col,row,found_key)
@@ -327,7 +335,11 @@ class GameBoard(tk.Frame):
         self.canvas.coords("lock2",785,160)
 
     def lockselection(self):
-        self.squarechosen = True
+        if self.validclick:
+            self.squarechosen = True
+            self.selected_displaypiece_bybutton.config(background="green")
+        else:
+            return
 
     def refresh(self, event):
         '''Redraw the board, possibly in response to window being resized'''
