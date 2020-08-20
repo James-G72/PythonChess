@@ -132,11 +132,11 @@ class GameBoard(tk.Frame):
         # I am not sure if this is specific to mine but there is 77 pixels per square
         self.selectsquare(x0,y0)
 
-    def selectsquare(self, col, row):
+    def selectsquare(self, xcoords, ycoords):
         self.canvas.delete("highlight")
         offset = self.square_virtual_size # This is the number required to make it work......
-        col = math.floor(col/offset)
-        row = math.floor(row/offset)
+        col = math.floor(xcoords/offset)
+        row = math.floor(ycoords/offset)
         if col <= 7 and row <= 7:
             self.highlightsquare(col,row,"red",'highlight')
             self.square_text_x.set("Selected Square (x) = "+str(col+1))
