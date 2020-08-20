@@ -20,6 +20,10 @@ class Pawn():
         else:
             self.moves.loc[col,2:3] = 1
 
+    def getid(self):
+        # Returns the id that corresponds to the correct image
+        return self.type+self.id
+
     def updatemoves(self,squarex,squarey,boardarray):
         print("update requested for "+str(self.type)+str(self.id))
 

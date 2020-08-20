@@ -142,6 +142,7 @@ class GameBoard(tk.Frame):
             self.square_text_x.set("Selected Square (x) = "+str(col+1))
             self.square_text_y.set("Selected Square (y) = "+str(row+1))
             found_key = []
+            other = self.boardarray.loc[row,col].
             for key,value in self.pieces.items():
                 if (value == (col,row)):
                     found_key=key

@@ -16,6 +16,10 @@ class Rook():
         self.moves = pd.DataFrame(np.zeros((8,8)),index=[0,1,2,3,4,5,6,7],columns=[0,1,2,3,4,5,6,7])
         # There are no moves to initialise so we can leave the matrix blank
 
+    def getid(self):
+        # Returns the id that corresponds to the correct image
+        return self.type+self.id
+
     def updatemoves(self,squarex,squarey,boardarray):
         t = 1
 
