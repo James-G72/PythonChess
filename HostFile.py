@@ -182,7 +182,6 @@ class GameBoard(tk.Frame):
 
     def selectsquare(self, xcoords, ycoords):
         if self.squarechosen == False:
-            self.canvas.delete("highlight")
             offset = self.square_virtual_size # This is the number required to make it work......
             col = math.floor(xcoords/offset)
             row = math.floor(ycoords/offset)
@@ -190,7 +189,7 @@ class GameBoard(tk.Frame):
                 self.canvas.delete("move")
                 self.canvas.delete("highlight")
                 self.canvas.delete("example")
-                self.highlightsquare(col,row,"red",'highlight')
+                self.highlightsquare(col,row,"blue",'highlight')
                 self.square_text_x.set("Selected Square (x) = "+str(col+1))
                 self.square_text_y.set("Selected Square (y) = "+str(row+1))
                 found_key = []
@@ -222,11 +221,12 @@ class GameBoard(tk.Frame):
             for plotter in target_squares:
                 if plotter[0] == str(col) and plotter [1] == str(row):
                     self.canvas.delete("move")
-                    self.highlightsquare(col,row,"orange",'move')
+                    self.highlightsquare(col,row,"green",'move')
                     self.movesquare = [col,row]
                     self.summarylabel3.place(x=self.square_virtual_size * 8+50,y=352,height=16)
                     self.summarylabel3_piece.place(x=self.square_virtual_size * 8+120,y=352,height=16)
                     self.newsquare.set("[ "+str(self.movesquare[0]+1)+" , "+str(self.movesquare[1]+1)+" ]")
+                    self.movebutton.config(state="normal")
 
     def highlightsquare(self,col,row,colour,tag):
         offset = self.square_virtual_size
@@ -243,7 +243,7 @@ class GameBoard(tk.Frame):
         factor = 1 # This accounts for the double move on a pawns first turn
         target_squares = self.possiblemoves(col,row)
         for plotter in target_squares:
-            self.highlightsquare(int(plotter[0]),int(plotter[1]),"green","example")
+            self.highlightsquare(int(plotter[0]),int(plotter[1]),"orange","example")
 
     def possiblemoves(self,col,row):
         squares = self.boardarray.loc[row,col].validsquares()
@@ -391,13 +391,16 @@ class GameBoard(tk.Frame):
             self.summarylabel2.place(x=self.square_virtual_size * 8+50,y=338,height=16)
             self.summarylabel2_piece.place(x=self.square_virtual_size * 8+120,y=338,height=16)
         elif self.squarechosen:
-            self.squarechosen = False
             self.selectbuttonstring.set("Select Piece")
             self.selected_displaypiece_bybutton.config(background="bisque")
             self.summarylabel1.place_forget()
             self.summarylabel1_piece.place_forget()
             self.summarylabel2.place_forget()
             self.summarylabel2_piece.place_forget()
+            self.summarylabel3.place_forget()
+            self.summarylabel3_piece.place_forget()
+            self.movebutton.config(state="disabled")
+            self.squarechosen = False
         else:
             return
 
