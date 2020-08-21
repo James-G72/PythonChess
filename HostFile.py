@@ -190,7 +190,7 @@ class GameBoard(tk.Frame):
                 self.canvas.delete("move")
                 self.canvas.delete("highlight")
                 self.canvas.delete("example")
-                self.highlightsquare(col,row,"blue",'highlight')
+                self.highlightsquare(row,col,"blue",'highlight')
                 self.square_text_x.set("Selected Square (x) = "+str(col+1))
                 self.square_text_y.set("Selected Square (y) = "+str(row+1))
                 found_key = []
@@ -202,12 +202,12 @@ class GameBoard(tk.Frame):
                 else:
                     occupier = self.piece_description[found_key[0]]
                     self.validclick = True
-                self.desiredsquare = [col,row]
+                self.desiredsquare = [row,col]
                 self.square_text_displaypiece.set("Selected Piece = "+occupier)
                 self.square_text_displaypiece_bybutton.set(occupier)
 
                 if self.initiated and found_key != []: # If a game has been started
-                    self.visualisemoves(col,row,found_key)
+                    self.visualisemoves(row,col,found_key)
             else:
                 # If the click is off of the square
                 self.square_text_x.set("Selected Square (x) = None")
@@ -220,16 +220,16 @@ class GameBoard(tk.Frame):
             row = math.floor(ycoords/offset)
             target_squares = self.possiblemoves(self.desiredsquare[0],self.desiredsquare[1])
             for plotter in target_squares:
-                if plotter[0] == str(col) and plotter [1] == str(row):
+                if plotter[0] == str(row) and plotter [1] == str(col):
                     self.canvas.delete("move")
-                    self.highlightsquare(col,row,"green",'move')
-                    self.movesquare = [col,row]
+                    self.highlightsquare(row,col,"green",'move')
+                    self.movesquare = [row,col]
                     self.summarylabel3.place(x=self.square_virtual_size * 8+50,y=352,height=16)
                     self.summarylabel3_piece.place(x=self.square_virtual_size * 8+120,y=352,height=16)
                     self.newsquare.set("[ "+str(self.movesquare[0]+1)+" , "+str(self.movesquare[1]+1)+" ]")
                     self.movebutton.config(state="normal")
 
-    def highlightsquare(self,col,row,colour,tag):
+    def highlightsquare(self,row,col,colour,tag):
         offset = self.square_virtual_size
         if colour == "green":
             colour = "#00cc00" # This is just a lighter green than the standard "green" color to make it clearer on the board
@@ -238,19 +238,19 @@ class GameBoard(tk.Frame):
         self.canvas.create_line(col * offset+offset,row * offset+offset,col * offset+offset,row * offset,fill=colour,width=3,tag=tag)
         self.canvas.create_line(col * offset+offset,row * offset+offset,col * offset,row * offset+offset,fill=colour,width=3,tag=tag)
 
-    def visualisemoves(self,col,row,piece_code):
+    def visualisemoves(self,row,col,piece_code):
         self.canvas.delete("example")
         offset = self.square_virtual_size # This is the number required to make it work......
         factor = 1 # This accounts for the double move on a pawns first turn
-        target_squares = self.possiblemoves(col,row)
+        target_squares = self.possiblemoves(row,col)
         for plotter in target_squares:
             self.highlightsquare(int(plotter[0]),int(plotter[1]),"orange","example")
 
-    def possiblemoves(self,col,row):
+    def possiblemoves(self,row,col):
         squares = self.boardarray_pieces.loc[row,col].validsquares()
         return squares
 
-    def addpiece(self, name, image, column=0, row=0):
+    def addpiece(self, name, image, row, column):
         # We can add a piece to the board at the requested location
         # This hijacks the function below by creating the specified piece first
         self.canvas.create_image(0,0, image=image, tags=(name, "piece"), anchor="c")
@@ -261,10 +261,10 @@ class GameBoard(tk.Frame):
         self.canvas.delete(name)
         del self.pieces[name] # We also remove it from the pieces list
 
-    def placepiece(self, name, column, row):
+    def placepiece(self, name, row, col):
         '''Place a piece at the given row/column'''
-        self.pieces[name] = (column,row)
-        x0 = (column * self.size) + int(self.size/2)
+        self.pieces[name] = (row,col)
+        x0 = (col * self.size) + int(self.size/2)
         y0 = (row * self.size) + int(self.size/2)
         self.canvas.coords(name, x0, y0)
 
@@ -407,12 +407,12 @@ class GameBoard(tk.Frame):
             return
 
     def movepiece(self):
-        self.placepiece(self.boardarray_pieces.loc[self.desiredsquare[1],self.desiredsquare[0]].getid(),self.movesquare[0],self.movesquare[1])
-        self.boardarray_pieces.loc[self.movesquare[1],self.movesquare[0]] = self.boardarray_pieces.loc[self.desiredsquare[1],self.desiredsquare[0]]
-        self.boardarray_pieces.loc[self.desiredsquare[1],self.desiredsquare[0]] = 0
-        self.colourarray.loc[self.desiredsquare[1],self.desiredsquare[0]] = 0
-        self.colourarray.loc[self.movesquare[1],self.movesquare[0]] = self.boardarray_pieces.loc[self.movesquare[1],self.movesquare[0]].getcolour()
-        self.boardarray_pieces.loc[self.movesquare[1],self.movesquare[0]].iterate()
+        self.placepiece(self.boardarray_pieces.loc[self.desiredsquare[0],self.desiredsquare[1]].getid(),self.movesquare[0],self.movesquare[1])
+        self.boardarray_pieces.loc[self.movesquare[0],self.movesquare[1]] = self.boardarray_pieces.loc[self.desiredsquare[0],self.desiredsquare[1]]
+        self.boardarray_pieces.loc[self.desiredsquare[0],self.desiredsquare[1]] = 0
+        self.colourarray.loc[self.desiredsquare[0],self.desiredsquare[1]] = 0
+        self.colourarray.loc[self.movesquare[0],self.movesquare[1]] = self.boardarray_pieces.loc[self.movesquare[0],self.movesquare[1]].getcolour()
+        self.boardarray_pieces.loc[self.movesquare[0],self.movesquare[1]].iterate()
         self.lockselection()
         self.canvas.delete("highlight")
         self.canvas.delete("example")

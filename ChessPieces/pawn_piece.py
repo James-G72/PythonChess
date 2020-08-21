@@ -33,18 +33,22 @@ class Pawn():
     def updatemoves(self,row,col,boardarray,colourarray):
         # row and col essentially tell the piece where it is
         self.moves = pd.DataFrame(np.zeros((8,8)),index=[0,1,2,3,4,5,6,7],columns=[0,1,2,3,4,5,6,7])
-
+        reach = 1 # How far a pawn can reach
         if self.colour == "w":
-            checkrow = row-1
+            checkrow = row-reach
         else:
-            checkrow = row+1
+            checkrow = row+reach
         if colourarray.loc[checkrow,col] == 0:
             self.moves.loc[checkrow,col] = 1
             if self.turns == 0: # Then the pawn has moved and therefore cannot move twice
-                if colourarray.loc[checkrow+1,col] == 0:
-                    self.moves.loc[checkrow+1,col] = 1
+                if self.colour == "w":
+                    extrareach = checkrow-1
                 else:
-                    self.moves.loc[checkrow+1,col] = 0
+                    extrareach = checkrow+1
+                if colourarray.loc[extrareach,col] == 0:
+                    self.moves.loc[extrareach,col] = 1
+                else:
+                    self.moves.loc[extrareach,col] = 0
         for checkcol in [col-1,col+1]:
             if checkcol >=0 and checkcol <=7:
                 if colourarray.loc[checkrow,checkcol] != self.colour and colourarray.loc[checkrow,checkcol] != 0:
