@@ -24,6 +24,9 @@ class Pawn():
         # Returns the id that corresponds to the correct image
         return self.type+self.id
 
+    def iterate(self):
+        self.turns += 1
+
     def updatemoves(self,squarex,squarey,boardarray):
         print("update requested for "+str(self.type)+str(self.id))
 

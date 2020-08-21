@@ -19,6 +19,9 @@ class Queen():
         # Returns the id that corresponds to the correct image
         return self.type+self.id
 
+    def iterate(self):
+        self.turns += 1
+
     def updatemoves(self,squarex,squarey,boardarray):
         t = 1
 

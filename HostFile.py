@@ -404,6 +404,7 @@ class GameBoard(tk.Frame):
         self.placepiece(self.boardarray_pieces.loc[self.desiredsquare[1],self.desiredsquare[0]].getid(),self.movesquare[0],self.movesquare[1])
         self.boardarray_pieces.loc[self.movesquare[1],self.movesquare[0]] = self.boardarray_pieces.loc[self.desiredsquare[1],self.desiredsquare[0]]
         self.boardarray_pieces.loc[self.desiredsquare[1],self.desiredsquare[0]] = 0
+        self.boardarray_pieces.loc[self.movesquare[1],self.movesquare[0]].iterate()
         self.lockselection()
         self.canvas.delete("highlight")
         self.canvas.delete("example")
@@ -412,7 +413,11 @@ class GameBoard(tk.Frame):
         self.update_piecemoves()
 
     def update_piecemoves(self):
-
+        # Later on it would be good to add some optimisation here but for now it is enough to cycle though
+        for row in range(0,8):
+            for col in range(0,8):
+                if self.boardarray_pieces[row,col] != 0:
+                    self.boardarray_pieces[row,col].updatemoves()
 
     def refresh(self, event):
         '''Redraw the board, possibly in response to window being resized'''
