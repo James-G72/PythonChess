@@ -59,8 +59,8 @@ class Pawn():
     def validsquares(self):
         # This method packs the current valid moves into a simple
         squares_array = []
-        for y in self.moves.index:
-            for x in self.moves.columns:
-                if self.moves.loc[x,y]:
-                    squares_array.append(str(x)+str(y))
+        for row in self.moves.index:
+            for col in self.moves.columns:
+                if self.moves.loc[row,col]:
+                    squares_array.append(str(row)+str(col))
         return squares_array

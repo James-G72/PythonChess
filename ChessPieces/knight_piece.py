@@ -15,11 +15,11 @@ class Knight():
 
         self.moves = pd.DataFrame(np.zeros((8,8)),index=[0,1,2,3,4,5,6,7],columns=[0,1,2,3,4,5,6,7])
         if self.colour == "w":
-            self.moves.loc[col-1,5] = 1
-            self.moves.loc[col+1,5] = 1
+            self.moves.loc[5,col-1] = 1
+            self.moves.loc[5,col+1] = 1
         else:
-            self.moves.loc[col-1,2] = 1
-            self.moves.loc[col+1,2] = 1
+            self.moves.loc[2,col-1] = 1
+            self.moves.loc[2,col+1] = 1
 
     def getid(self):
         # Returns the id that corresponds to the correct image
@@ -34,8 +34,8 @@ class Knight():
     def validsquares(self):
         # This method packs the current valid moves into a simple
         squares_array = []
-        for y in self.moves.index:
-            for x in self.moves.columns:
-                if self.moves.loc[x,y]:
-                    squares_array.append(str(x)+str(y))
+        for row in self.moves.index:
+            for col in self.moves.columns:
+                if self.moves.loc[row,col]:
+                    squares_array.append(str(row)+str(col))
         return squares_array
