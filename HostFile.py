@@ -31,7 +31,7 @@ class GameBoard(tk.Frame):
         self.piece_description = {}
         self.square_virtual_size = 77
         self.initiated = False # Has a game started
-        self.boardarray = pd.DataFrame(np.zeros((8,8)),index=[0,1,2,3,4,5,6,7],columns=[0,1,2,3,4,5,6,7])
+        self.boardarray_pieces = pd.DataFrame(np.zeros((8,8)),index=[0,1,2,3,4,5,6,7],columns=[0,1,2,3,4,5,6,7])
 
         self.desiredsquare = [] # This is the square that the player wants to move
         self.squarechosen = False
@@ -193,8 +193,8 @@ class GameBoard(tk.Frame):
                 self.square_text_x.set("Selected Square (x) = "+str(col+1))
                 self.square_text_y.set("Selected Square (y) = "+str(row+1))
                 found_key = []
-                if self.boardarray.loc[row,col] != 0:
-                    found_key = self.boardarray.loc[row,col].getid()
+                if self.boardarray_pieces.loc[row,col] != 0:
+                    found_key = self.boardarray_pieces.loc[row,col].getid()
                 if found_key == []:
                     occupier = "None"
                     self.validclick = False
@@ -246,7 +246,7 @@ class GameBoard(tk.Frame):
             self.highlightsquare(int(plotter[0]),int(plotter[1]),"orange","example")
 
     def possiblemoves(self,col,row):
-        squares = self.boardarray.loc[row,col].validsquares()
+        squares = self.boardarray_pieces.loc[row,col].validsquares()
         return squares
 
     def addpiece(self, name, image, column=0, row=0):
@@ -278,53 +278,53 @@ class GameBoard(tk.Frame):
         R1 = ChessPieces.Rook("R1",7,0)
         R2 = ChessPieces.Rook("R2",7,7)
         self.addpiece("r1",self.imageholder["r"],0,0)
-        self.boardarray.loc[0,0] = r1
+        self.boardarray_pieces.loc[0,0] = r1
         self.addpiece("r2",self.imageholder["r"],0,7)
-        self.boardarray.loc[0,7] = r2
+        self.boardarray_pieces.loc[0,7] = r2
         self.addpiece("R1",self.imageholder["R"],7,0)
-        self.boardarray.loc[7,0] = R1
+        self.boardarray_pieces.loc[7,0] = R1
         self.addpiece("R2",self.imageholder["R"],7,7)
-        self.boardarray.loc[7,7] = R2
+        self.boardarray_pieces.loc[7,7] = R2
         # Naves
         n1 = ChessPieces.Knight("n1",0,1)
         n2 = ChessPieces.Knight("n2",0,6)
         N1 = ChessPieces.Knight("N1",7,1)
         N2 = ChessPieces.Knight("N2",7,6)
         self.addpiece("n1",self.imageholder["n"],0,1)
-        self.boardarray.loc[0,1] = n1
+        self.boardarray_pieces.loc[0,1] = n1
         self.addpiece("n2",self.imageholder["n"],0,6)
-        self.boardarray.loc[0,6] = n2
+        self.boardarray_pieces.loc[0,6] = n2
         self.addpiece("N1",self.imageholder["N"],7,1)
-        self.boardarray.loc[7,1] = N1
+        self.boardarray_pieces.loc[7,1] = N1
         self.addpiece("N2",self.imageholder["N"],7,6)
-        self.boardarray.loc[7,6] = N2
+        self.boardarray_pieces.loc[7,6] = N2
         # Bishops
         b1 = ChessPieces.Bishop("b1",0,2)
         b2 = ChessPieces.Bishop("b2",0,5)
         B1 = ChessPieces.Bishop("B1",7,2)
         B2 = ChessPieces.Bishop("B2",7,5)
         self.addpiece("b1",self.imageholder["b"],0,2)
-        self.boardarray.loc[0,2] = b1
+        self.boardarray_pieces.loc[0,2] = b1
         self.addpiece("b2",self.imageholder["b"],0,5)
-        self.boardarray.loc[0,5] = b2
+        self.boardarray_pieces.loc[0,5] = b2
         self.addpiece("B1",self.imageholder["B"],7,2)
-        self.boardarray.loc[7,2] = B1
+        self.boardarray_pieces.loc[7,2] = B1
         self.addpiece("B2",self.imageholder["B"],7,5)
-        self.boardarray.loc[7,5] = B2
+        self.boardarray_pieces.loc[7,5] = B2
         # Queens
         q1 = ChessPieces.Queen("q1",0,3)
         Q1 = ChessPieces.Queen("Q1",7,3)
         self.addpiece("q1",self.imageholder["q"],0,3)
-        self.boardarray.loc[0,3] = q1
+        self.boardarray_pieces.loc[0,3] = q1
         self.addpiece("Q1",self.imageholder["Q"],7,3)
-        self.boardarray.loc[7,3] = Q1
+        self.boardarray_pieces.loc[7,3] = Q1
         # Kings
         k1 = ChessPieces.King("k1",0,4)
         K1 = ChessPieces.King("K1",7,4)
         self.addpiece("k1",self.imageholder["k"],0,4)
-        self.boardarray.loc[0,4] = k1
+        self.boardarray_pieces.loc[0,4] = k1
         self.addpiece("K1",self.imageholder["K"],7,4)
-        self.boardarray.loc[7,4] = K1
+        self.boardarray_pieces.loc[7,4] = K1
         # Pawns
         p1 = ChessPieces.Pawn("p1",1,0)
         p2 = ChessPieces.Pawn("p2",1,1)
@@ -345,22 +345,22 @@ class GameBoard(tk.Frame):
         for x in range(0,8):
             self.addpiece("p"+str(x+1),self.imageholder["p"],1,x)
             self.addpiece("P"+str(x+1),self.imageholder["P"],6,x)
-        self.boardarray.loc[1,0] = p1
-        self.boardarray.loc[1,1] = p2
-        self.boardarray.loc[1,2] = p3
-        self.boardarray.loc[1,3] = p4
-        self.boardarray.loc[1,4] = p5
-        self.boardarray.loc[1,5] = p6
-        self.boardarray.loc[1,6] = p7
-        self.boardarray.loc[1,7] = p8
-        self.boardarray.loc[6,0] = P1
-        self.boardarray.loc[6,1] = P2
-        self.boardarray.loc[6,2] = P3
-        self.boardarray.loc[6,3] = P4
-        self.boardarray.loc[6,4] = P5
-        self.boardarray.loc[6,5] = P6
-        self.boardarray.loc[6,6] = P7
-        self.boardarray.loc[6,7] = P8
+        self.boardarray_pieces.loc[1,0] = p1
+        self.boardarray_pieces.loc[1,1] = p2
+        self.boardarray_pieces.loc[1,2] = p3
+        self.boardarray_pieces.loc[1,3] = p4
+        self.boardarray_pieces.loc[1,4] = p5
+        self.boardarray_pieces.loc[1,5] = p6
+        self.boardarray_pieces.loc[1,6] = p7
+        self.boardarray_pieces.loc[1,7] = p8
+        self.boardarray_pieces.loc[6,0] = P1
+        self.boardarray_pieces.loc[6,1] = P2
+        self.boardarray_pieces.loc[6,2] = P3
+        self.boardarray_pieces.loc[6,3] = P4
+        self.boardarray_pieces.loc[6,4] = P5
+        self.boardarray_pieces.loc[6,5] = P6
+        self.boardarray_pieces.loc[6,6] = P7
+        self.boardarray_pieces.loc[6,7] = P8
 
         self.player1.config(state="normal")  # Enabling the dropdown options
         self.player2.config(state="normal")
@@ -393,19 +393,26 @@ class GameBoard(tk.Frame):
         elif self.squarechosen:
             self.selectbuttonstring.set("Select Piece")
             self.selected_displaypiece_bybutton.config(background="bisque")
-            self.summarylabel1.place_forget()
-            self.summarylabel1_piece.place_forget()
-            self.summarylabel2.place_forget()
-            self.summarylabel2_piece.place_forget()
-            self.summarylabel3.place_forget()
-            self.summarylabel3_piece.place_forget()
+            self.oldsquare.set("")
+            self.newsquare.set("")
             self.movebutton.config(state="disabled")
             self.squarechosen = False
         else:
             return
 
     def movepiece(self):
-        t=1
+        self.placepiece(self.boardarray_pieces.loc[self.desiredsquare[1],self.desiredsquare[0]].getid(),self.movesquare[0],self.movesquare[1])
+        self.boardarray_pieces.loc[self.movesquare[1],self.movesquare[0]] = self.boardarray_pieces.loc[self.desiredsquare[1],self.desiredsquare[0]]
+        self.boardarray_pieces.loc[self.desiredsquare[1],self.desiredsquare[0]] = 0
+        self.lockselection()
+        self.canvas.delete("highlight")
+        self.canvas.delete("example")
+        self.canvas.delete("move")
+        # Allows for the the piece valid spaces to be updated by the latest move
+        self.update_piecemoves()
+
+    def update_piecemoves(self):
+
 
     def refresh(self, event):
         '''Redraw the board, possibly in response to window being resized'''
