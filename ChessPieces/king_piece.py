@@ -22,7 +22,7 @@ class King():
     def iterate(self):
         self.turns += 1
 
-    def updatemoves(self,boardarray,colourarray):
+    def updatemoves(self,row,col,boardarray,colourarray):
         t = 1
 
     def validsquares(self):

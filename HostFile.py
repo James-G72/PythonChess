@@ -366,7 +366,7 @@ class GameBoard(tk.Frame):
         # Updating the colourarray position
         self.colourarray = pd.DataFrame(np.zeros((8,8)),index=[0,1,2,3,4,5,6,7],columns=[0,1,2,3,4,5,6,7])
         self.colourarray.loc[0:1,:] = "b"
-        self.colourarray[6:7,:] = "w"
+        self.colourarray.loc[6:7,:] = "w"
 
         self.player1.config(state="normal")  # Enabling the drop-down options
         self.player2.config(state="normal")
@@ -426,7 +426,7 @@ class GameBoard(tk.Frame):
             for col in range(0,8):
                 if self.boardarray_pieces.loc[row,col] != 0: # If the space is blank we ship it
                     # Otherwise we call the update function in each of the pieces
-                    self.boardarray_pieces.loc[row,col].updatemoves(self.boardarray_pieces,self.colourarray)
+                    self.boardarray_pieces.loc[row,col].updatemoves(row,col,self.boardarray_pieces,self.colourarray)
 
     def refresh(self, event):
         '''Redraw the board, possibly in response to window being resized'''

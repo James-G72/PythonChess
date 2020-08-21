@@ -30,8 +30,29 @@ class Pawn():
     def iterate(self):
         self.turns += 1
 
-    def updatemoves(self,boardarray,colourarray):
-        print("update requested for "+str(self.type)+str(self.id))
+    def updatemoves(self,row,col,boardarray,colourarray):
+        # row and col essentially tell the piece where it is
+        if self.colour == "w":
+            checkrow = row+1
+        else:
+            checkrow = row-1
+        if colourarray.loc[checkrow,col] == 0:
+            self.moves.loc[checkrow,col] = 1
+            if self.turns == 0: # Then the pawn has moved and therefore cannot move twice
+                if colourarray.loc[checkrow+1,col] == 0:
+                    self.moves.loc[checkrow+1,col] = 1
+                else:
+                    self.moves.loc[checkrow+1,col] = 0
+        for checkcol in [col-1,col+1]:
+            if checkcol >=0 and checkcol <=7:
+                if colourarray.loc[checkrow,checkcol] != self.colour and colourarray.loc[checkrow,checkcol] != 0:
+                    self.moves.loc[checkrow,checkcol] = 1
+                else:
+                    self.moves.loc[checkrow,checkcol] = 0
+                if colourarray.loc[checkrow,col+1] != self.colour and colourarray.loc[checkrow,checkcol] != 0:
+                    self.moves.loc[checkrow,checkcol] = 1
+                else:
+                    self.moves.loc[checkrow,checkcol] = 0
 
     def validsquares(self):
         # This method packs the current valid moves into a simple
