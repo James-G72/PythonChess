@@ -136,9 +136,35 @@ class GameBoard(tk.Frame):
         self.square_text_displaypiece_bybutton.set("None")
         self.selected_displaypiece_bybutton = tk.Label(self,textvariable=self.square_text_displaypiece_bybutton,bg="bisque")
         self.selected_displaypiece_bybutton.place(x=self.square_virtual_size * 8+118,y=285,height=16)
-        self.move_button = tk.Button(self,textvariable="Move Piece",fg="black",background="black",font=("TKDefaultFont",25), command=self.movepiece)
-        self.move_button.place(x=self.square_virtual_size * 8+20,y=300,height=20)
-        self.movebutton.config(status="Disabled")
+        self.canvas.create_rectangle(self.square_virtual_size * 8+16,298,self.square_virtual_size * 8+10+180,368,width=1)
+        self.summary_heading = tk.Label(self,text="Summary:",font=("TKDefaultFont",10),bg="bisque")
+        self.summary_heading.place(x=self.square_virtual_size*8 + 80, y=310, height=16)
+        self.summarylabel1 = tk.Label(self,text="Move:",font=("TKDefaultFont",10),bg="bisque")
+        self.summarylabel1.place(x=self.square_virtual_size * 8+50,y=324,height=16)
+        self.summarylabel1_piece = tk.Label(self,textvariable=self.square_text_displaypiece_bybutton,font=("TKDefaultFont",10),bg="bisque")
+        self.summarylabel1_piece.place(x=self.square_virtual_size * 8+120,y=324,height=16)
+        self.summarylabel2 = tk.Label(self,text="From:",font=("TKDefaultFont",10),bg="bisque")
+        self.summarylabel2.place(x=self.square_virtual_size * 8+50,y=338,height=16)
+        self.oldsquare = tk.StringVar()
+        self.oldsquare.set("[ , ]")
+        self.summarylabel2_piece = tk.Label(self,textvariable=self.oldsquare,font=("TKDefaultFont",10),bg="bisque")
+        self.summarylabel2_piece.place(x=self.square_virtual_size * 8+120,y=338,height=16)
+        self.summarylabel3 = tk.Label(self,text="To:",font=("TKDefaultFont",10),bg="bisque")
+        self.summarylabel3.place(x=self.square_virtual_size * 8+50,y=352,height=16)
+        self.newsquare = tk.StringVar()
+        self.newsquare.set("[ , ]")
+        self.summarylabel3_piece = tk.Label(self,textvariable=self.newsquare,font=("TKDefaultFont",10),bg="bisque")
+        self.summarylabel3_piece.place(x=self.square_virtual_size * 8+120,y=352,height=16)
+        self.summarylabel1.place_forget()
+        self.summarylabel1_piece.place_forget()
+        self.summarylabel2.place_forget()
+        self.summarylabel2_piece.place_forget()
+        self.summarylabel3.place_forget()
+        self.summarylabel3_piece.place_forget()
+
+        self.movebutton = tk.Button(self,text="Move Piece",fg="black",background="black",font=("TKDefaultFont",22), command=self.movepiece)
+        self.movebutton.place(x=self.square_virtual_size * 8+50,y=384,height=20)
+        self.movebutton.config(state="disabled")
 
         # Binding configuration and left mouse click
         self.canvas.bind("<Button 1>",self.getcoords) # This allows the clicking to be tracked
@@ -198,6 +224,9 @@ class GameBoard(tk.Frame):
                     self.canvas.delete("move")
                     self.highlightsquare(col,row,"orange",'move')
                     self.movesquare = [col,row]
+                    self.summarylabel3.place(x=self.square_virtual_size * 8+50,y=352,height=16)
+                    self.summarylabel3_piece.place(x=self.square_virtual_size * 8+120,y=352,height=16)
+                    self.newsquare.set("[ "+str(self.movesquare[0]+1)+" , "+str(self.movesquare[1]+1)+" ]")
 
     def highlightsquare(self,col,row,colour,tag):
         offset = self.square_virtual_size
@@ -240,6 +269,7 @@ class GameBoard(tk.Frame):
 
     def defaults(self):
         '''Sets the board up for a fresh game'''
+        self.start_button.config(state="normal")
 
         # Adding in pieces 1 by 1 and create the objects to store in boardarray
         # Castles
@@ -341,6 +371,7 @@ class GameBoard(tk.Frame):
     def initiate(self):
         # Start the game here
         self.initiated = True # Indicates that the game has started
+        self.start_button.config(state="disabled")
         print("Start")
         self.player1.config(state="disabled")  # Disabling the dropdown options
         self.player2.config(state="disabled")
@@ -354,10 +385,19 @@ class GameBoard(tk.Frame):
             self.squarechosen = True
             self.selectbuttonstring.set("Deselect Piece")
             self.selected_displaypiece_bybutton.config(background="green")
+            self.summarylabel1.place(x=self.square_virtual_size * 8+50,y=324,height=16)
+            self.oldsquare.set("[ "+str(self.desiredsquare[0]+1)+" , "+str(self.desiredsquare[1]+1)+" ]")
+            self.summarylabel1_piece.place(x=self.square_virtual_size * 8+120,y=324,height=16)
+            self.summarylabel2.place(x=self.square_virtual_size * 8+50,y=338,height=16)
+            self.summarylabel2_piece.place(x=self.square_virtual_size * 8+120,y=338,height=16)
         elif self.squarechosen:
             self.squarechosen = False
             self.selectbuttonstring.set("Select Piece")
             self.selected_displaypiece_bybutton.config(background="bisque")
+            self.summarylabel1.place_forget()
+            self.summarylabel1_piece.place_forget()
+            self.summarylabel2.place_forget()
+            self.summarylabel2_piece.place_forget()
         else:
             return
 
