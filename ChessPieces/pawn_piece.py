@@ -16,9 +16,9 @@ class Pawn():
         # This is the key piece of information
         self.moves = pd.DataFrame(np.zeros((8,8)),index=[0,1,2,3,4,5,6,7],columns=[0,1,2,3,4,5,6,7])
         if self.colour == "w":
-            self.moves.loc[col,4:5] = 1
+            self.moves.loc[4:5,col] = 1
         else:
-            self.moves.loc[col,2:3] = 1
+            self.moves.loc[2:3,col] = 1
 
     def getid(self):
         # This is used for the placepiece method such that the correct image can be displayed
@@ -32,10 +32,12 @@ class Pawn():
 
     def updatemoves(self,row,col,boardarray,colourarray):
         # row and col essentially tell the piece where it is
+        self.moves = pd.DataFrame(np.zeros((8,8)),index=[0,1,2,3,4,5,6,7],columns=[0,1,2,3,4,5,6,7])
+
         if self.colour == "w":
-            checkrow = row+1
-        else:
             checkrow = row-1
+        else:
+            checkrow = row+1
         if colourarray.loc[checkrow,col] == 0:
             self.moves.loc[checkrow,col] = 1
             if self.turns == 0: # Then the pawn has moved and therefore cannot move twice
