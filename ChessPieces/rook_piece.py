@@ -23,7 +23,7 @@ class Rook():
     def iterate(self):
         self.turns += 1
 
-    def updatemoves(self,squarex,squarey,boardarray):
+    def updatemoves(self,boardarray,colourarray):
         t = 1
 
     def validsquares(self):

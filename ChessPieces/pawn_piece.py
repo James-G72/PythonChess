@@ -21,13 +21,16 @@ class Pawn():
             self.moves.loc[col,2:3] = 1
 
     def getid(self):
-        # Returns the id that corresponds to the correct image
+        # This is used for the placepiece method such that the correct image can be displayed
         return self.type+self.id
+
+    def getcolour(self):
+        return self.colour
 
     def iterate(self):
         self.turns += 1
 
-    def updatemoves(self,squarex,squarey,boardarray):
+    def updatemoves(self,boardarray,colourarray):
         print("update requested for "+str(self.type)+str(self.id))
 
     def validsquares(self):

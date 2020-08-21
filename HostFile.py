@@ -32,6 +32,7 @@ class GameBoard(tk.Frame):
         self.square_virtual_size = 77
         self.initiated = False # Has a game started
         self.boardarray_pieces = pd.DataFrame(np.zeros((8,8)),index=[0,1,2,3,4,5,6,7],columns=[0,1,2,3,4,5,6,7])
+        self.colourarray = pd.DataFrame(np.zeros((8,8)),index=[0,1,2,3,4,5,6,7],columns=[0,1,2,3,4,5,6,7])
 
         self.desiredsquare = [] # This is the square that the player wants to move
         self.squarechosen = False
@@ -362,7 +363,12 @@ class GameBoard(tk.Frame):
         self.boardarray_pieces.loc[6,6] = P7
         self.boardarray_pieces.loc[6,7] = P8
 
-        self.player1.config(state="normal")  # Enabling the dropdown options
+        # Updating the colourarray position
+        self.colourarray = pd.DataFrame(np.zeros((8,8)),index=[0,1,2,3,4,5,6,7],columns=[0,1,2,3,4,5,6,7])
+        self.colourarray.loc[0:1,:] = "b"
+        self.colourarray[6:7,:] = "w"
+
+        self.player1.config(state="normal")  # Enabling the drop-down options
         self.player2.config(state="normal")
         self.canvas.delete("lock1") # Removing the lock symbol if its there
         self.canvas.delete("lock2")
@@ -373,7 +379,7 @@ class GameBoard(tk.Frame):
         self.initiated = True # Indicates that the game has started
         self.start_button.config(state="disabled")
         print("Start")
-        self.player1.config(state="disabled")  # Disabling the dropdown options
+        self.player1.config(state="disabled")  # Disabling the drop-down options
         self.player2.config(state="disabled")
         self.canvas.create_image(0,0, image=self.imageholder["lock"],tags="lock1", anchor="c") # Adding lock image
         self.canvas.create_image(0,0,image=self.imageholder["lock"],tags="lock2",anchor="c")
@@ -404,6 +410,8 @@ class GameBoard(tk.Frame):
         self.placepiece(self.boardarray_pieces.loc[self.desiredsquare[1],self.desiredsquare[0]].getid(),self.movesquare[0],self.movesquare[1])
         self.boardarray_pieces.loc[self.movesquare[1],self.movesquare[0]] = self.boardarray_pieces.loc[self.desiredsquare[1],self.desiredsquare[0]]
         self.boardarray_pieces.loc[self.desiredsquare[1],self.desiredsquare[0]] = 0
+        self.colourarray.loc[self.desiredsquare[1],self.desiredsquare[0]] = 0
+        self.colourarray.loc[self.movesquare[1],self.movesquare[0]] = self.boardarray_pieces.loc[self.movesquare[1],self.movesquare[0]].getcolour()
         self.boardarray_pieces.loc[self.movesquare[1],self.movesquare[0]].iterate()
         self.lockselection()
         self.canvas.delete("highlight")
@@ -416,8 +424,9 @@ class GameBoard(tk.Frame):
         # Later on it would be good to add some optimisation here but for now it is enough to cycle though
         for row in range(0,8):
             for col in range(0,8):
-                if self.boardarray_pieces[row,col] != 0:
-                    self.boardarray_pieces[row,col].updatemoves()
+                if self.boardarray_pieces.loc[row,col] != 0: # If the space is blank we ship it
+                    # Otherwise we call the update function in each of the pieces
+                    self.boardarray_pieces.loc[row,col].updatemoves(self.boardarray_pieces,self.colourarray)
 
     def refresh(self, event):
         '''Redraw the board, possibly in response to window being resized'''
