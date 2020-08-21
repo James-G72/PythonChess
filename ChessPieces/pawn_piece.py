@@ -49,7 +49,7 @@ class Pawn():
                     self.moves.loc[checkrow,checkcol] = 1
                 else:
                     self.moves.loc[checkrow,checkcol] = 0
-                if colourarray.loc[checkrow,col+1] != self.colour and colourarray.loc[checkrow,checkcol] != 0:
+                if colourarray.loc[checkrow,checkcol] != self.colour and colourarray.loc[checkrow,checkcol] != 0:
                     self.moves.loc[checkrow,checkcol] = 1
                 else:
                     self.moves.loc[checkrow,checkcol] = 0
