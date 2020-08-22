@@ -235,8 +235,8 @@ class GameBoard(tk.Frame):
                     self.canvas.delete("move")
                     self.highlightsquare(row,col,"green",'move')
                     self.movesquare = [row,col]
-                    self.summarylabel3.place(x=self.square_virtual_size * 8+50,y=352,height=16)
-                    self.summarylabel3_piece.place(x=self.square_virtual_size * 8+120,y=352,height=16)
+                    self.summarylabel3.place(x=self.square_virtual_size * 8+50,y=self.controls_height+112,height=16)
+                    self.summarylabel3_piece.place(x=self.square_virtual_size * 8+120,y=self.controls_height+112,height=16)
                     self.newsquare.set("[ "+str(self.movesquare[0]+1)+" , "+str(self.movesquare[1]+1)+" ]")
                     self.movebutton.config(state="normal")
 
@@ -396,18 +396,18 @@ class GameBoard(tk.Frame):
         self.canvas.create_image(0,0,image=self.imageholder["lock"],tags="lock2",anchor="c")
         self.canvas.coords("lock1",785,140)
         self.canvas.coords("lock2",785,160)
-        self.current_turn.set("White Pieces")
+        self.current_turn_disp.set("White Pieces")
 
     def lockselection(self):
         if self.validclick and self.squarechosen == False:
             self.squarechosen = True
             self.selectbuttonstring.set("Deselect Piece")
             self.selected_displaypiece_bybutton.config(background="green")
-            self.summarylabel1.place(x=self.square_virtual_size * 8+50,y=324,height=16)
+            self.summarylabel1.place(x=self.square_virtual_size * 8+50,y=self.controls_height+84,height=16)
             self.oldsquare.set("[ "+str(self.desiredsquare[0]+1)+" , "+str(self.desiredsquare[1]+1)+" ]")
-            self.summarylabel1_piece.place(x=self.square_virtual_size * 8+120,y=324,height=16)
-            self.summarylabel2.place(x=self.square_virtual_size * 8+50,y=338,height=16)
-            self.summarylabel2_piece.place(x=self.square_virtual_size * 8+120,y=338,height=16)
+            self.summarylabel1.place(x=self.square_virtual_size * 8+50,y=self.controls_height+84,height=16)
+            self.summarylabel2.place(x=self.square_virtual_size * 8+50,y=self.controls_height+98,height=16)
+            self.summarylabel2_piece.place(x=self.square_virtual_size * 8+120,y=self.controls_height+98,height=16)
         elif self.squarechosen:
             self.selectbuttonstring.set("Select Piece")
             self.selected_displaypiece_bybutton.config(background="bisque")
@@ -433,10 +433,10 @@ class GameBoard(tk.Frame):
         self.update_piecemoves()
         # Flip the turn
         if self.current_turn_check == "w":
-            self.current_turn.set("Black Pieces")
+            self.current_turn_disp.set("Black Pieces")
             self.current_turn_check = "b"
         else:
-            self.current_turn.set("White Pieces")
+            self.current_turn_disp.set("White Pieces")
             self.current_turn_check = "w"
 
     def update_piecemoves(self):
