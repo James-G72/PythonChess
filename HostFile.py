@@ -33,6 +33,9 @@ class GameBoard(tk.Frame):
         self.initiated = False # Has a game started
         self.boardarray_pieces = pd.DataFrame(np.zeros((8,8)),index=[0,1,2,3,4,5,6,7],columns=[0,1,2,3,4,5,6,7])
         self.colourarray = pd.DataFrame(np.zeros((8,8)),index=[0,1,2,3,4,5,6,7],columns=[0,1,2,3,4,5,6,7])
+        self.current_turn_disp = tk.StringVar() # This hides the turn label until the game starts
+        self.current_turn_disp.set("")
+        self.current_turn_check = "w"
 
         self.desiredsquare = [] # This is the square that the player wants to move
         self.squarechosen = False
@@ -56,7 +59,7 @@ class GameBoard(tk.Frame):
         imageholder["lock"] = tk.PhotoImage(data=string)
         self.imageholder = imageholder
 
-        # Adding text for piece descriptions
+        # Adding text for piece descriptions to a dictionary
         self.piece_description["r"] = "Black Castle"
         self.piece_description["R"] = "White Castle"
         self.piece_description["b"] = "Black Bishop"
@@ -101,22 +104,23 @@ class GameBoard(tk.Frame):
         self.selected_displaypiece.place(x=self.square_virtual_size*8 + 15, y=80, height=16)
 
         # Adding playmode selector
-        self.canvas.create_rectangle(self.square_virtual_size*8 + 4,100,self.square_virtual_size*8 + 10+192,176,width=2)
+        self.playmode_height = 100
+        self.canvas.create_rectangle(self.square_virtual_size*8 + 4,self.playmode_height,self.square_virtual_size*8 + 10+192,self.playmode_height+76,width=2)
         self.mode_heading = tk.Label(self,text="Playing Modes:",font=("TKDefaultFont",18),bg="bisque")
-        self.mode_heading.place(x=self.square_virtual_size*8 + 45, y=115, height=20)
+        self.mode_heading.place(x=self.square_virtual_size*8 + 45, y=self.playmode_height+15, height=20)
         self.player1_label = tk.Label(self,text="White:",bg="bisque")
-        self.player1_label.place(x=self.square_virtual_size*8 + 15, y=145, height=16)
+        self.player1_label.place(x=self.square_virtual_size*8 + 15, y=self.playmode_height+45, height=16)
         self.player2_label = tk.Label(self,text="Black:",bg="bisque")
-        self.player2_label.place(x=self.square_virtual_size*8 + 15, y=165, height=16)
+        self.player2_label.place(x=self.square_virtual_size*8 + 15, y=self.playmode_height+65, height=16)
         self.playmode1 = tk.StringVar()
         self.playmode1.set("Person")
         self.playmode2 = tk.StringVar()
         self.playmode2.set("Computer")
         self.player1 = tk.OptionMenu(self,self.playmode1,"Person","Computer")
-        self.player1.place(x=self.square_virtual_size*8 + 80, y=145, height=16)
+        self.player1.place(x=self.square_virtual_size*8 + 80, y=self.playmode_height+45, height=16)
         self.player1.config(background="bisque") # For optionmenu the bg abbreviation means in the dropdown
         self.player2 = tk.OptionMenu(self,self.playmode2,"Person","Computer")
-        self.player2.place(x=self.square_virtual_size * 8+80,y=165,height=16)
+        self.player2.place(x=self.square_virtual_size * 8+80,y=self.playmode_height+65,height=16)
         self.player2.config(background="bisque") # For optionmenu the bg abbreviation means in the dropdown
 
         # Start and reset button
@@ -126,46 +130,47 @@ class GameBoard(tk.Frame):
         self.start_button.place(x=self.square_virtual_size * 8+20,y=196,height=28)
 
         # Adding controls section to allow the game to be played
-        self.canvas.create_rectangle(self.square_virtual_size*8 + 4,240,self.square_virtual_size*8 + 10+192,400,width=2)
+        self.controls_height = 225
+        self.canvas.create_rectangle(self.square_virtual_size*8 + 4,self.controls_height,self.square_virtual_size*8 + 10+192,self.controls_height+160,width=2)
         self.controls_heading = tk.Label(self,text="Controls:",font=("TKDefaultFont",18),bg="bisque")
-        self.controls_heading.place(x=self.square_virtual_size*8 + 70, y=255, height=16)
+        self.controls_heading.place(x=self.square_virtual_size*8 + 70, y=self.controls_height+15, height=16)
         self.selectbuttonstring = tk.StringVar()
         self.selectbuttonstring.set("Select Piece")
         self.select_button = tk.Button(self,textvariable=self.selectbuttonstring,fg="black",background="black",font=("TKDefaultFont",12), command=self.lockselection)
-        self.select_button.place(x=self.square_virtual_size * 8+20,y=285,height=20)
+        self.select_button.place(x=self.square_virtual_size * 8+20,y=self.controls_height+45,height=20)
         self.square_text_displaypiece_bybutton = tk.StringVar()
         self.square_text_displaypiece_bybutton.set("None")
         self.selected_displaypiece_bybutton = tk.Label(self,textvariable=self.square_text_displaypiece_bybutton,bg="bisque")
-        self.selected_displaypiece_bybutton.place(x=self.square_virtual_size * 8+118,y=285,height=16)
-        self.canvas.create_rectangle(self.square_virtual_size * 8+16,298,self.square_virtual_size * 8+10+180,368,width=1)
+        self.selected_displaypiece_bybutton.place(x=self.square_virtual_size * 8+118,y=self.controls_height+45,height=16)
+        self.canvas.create_rectangle(self.square_virtual_size * 8+16,self.controls_height+58,self.square_virtual_size * 8+10+180,self.controls_height+128,width=1)
         self.summary_heading = tk.Label(self,text="Summary:",font=("TKDefaultFont",10),bg="bisque")
-        self.summary_heading.place(x=self.square_virtual_size*8 + 80, y=310, height=16)
+        self.summary_heading.place(x=self.square_virtual_size*8 + 80, y=self.controls_height+70, height=16)
         self.summarylabel1 = tk.Label(self,text="Move:",font=("TKDefaultFont",10),bg="bisque")
-        self.summarylabel1.place(x=self.square_virtual_size * 8+50,y=324,height=16)
+        self.summarylabel1.place(x=self.square_virtual_size * 8+50,y=self.controls_height+84,height=16)
         self.summarylabel1_piece = tk.Label(self,textvariable=self.square_text_displaypiece_bybutton,font=("TKDefaultFont",10),bg="bisque")
-        self.summarylabel1_piece.place(x=self.square_virtual_size * 8+120,y=324,height=16)
+        self.summarylabel1_piece.place(x=self.square_virtual_size * 8+120,y=self.controls_height+84,height=16)
         self.summarylabel2 = tk.Label(self,text="From:",font=("TKDefaultFont",10),bg="bisque")
-        self.summarylabel2.place(x=self.square_virtual_size * 8+50,y=338,height=16)
+        self.summarylabel2.place(x=self.square_virtual_size * 8+50,y=self.controls_height+98,height=16)
         self.oldsquare = tk.StringVar()
         self.oldsquare.set("[ , ]")
         self.summarylabel2_piece = tk.Label(self,textvariable=self.oldsquare,font=("TKDefaultFont",10),bg="bisque")
-        self.summarylabel2_piece.place(x=self.square_virtual_size * 8+120,y=338,height=16)
+        self.summarylabel2_piece.place(x=self.square_virtual_size * 8+120,y=self.controls_height+98,height=16)
         self.summarylabel3 = tk.Label(self,text="To:",font=("TKDefaultFont",10),bg="bisque")
-        self.summarylabel3.place(x=self.square_virtual_size * 8+50,y=352,height=16)
+        self.summarylabel3.place(x=self.square_virtual_size * 8+50,y=self.controls_height+112,height=16)
         self.newsquare = tk.StringVar()
         self.newsquare.set("[ , ]")
         self.summarylabel3_piece = tk.Label(self,textvariable=self.newsquare,font=("TKDefaultFont",10),bg="bisque")
-        self.summarylabel3_piece.place(x=self.square_virtual_size * 8+120,y=352,height=16)
-        self.summarylabel1.place_forget()
-        self.summarylabel1_piece.place_forget()
-        self.summarylabel2.place_forget()
-        self.summarylabel2_piece.place_forget()
-        self.summarylabel3.place_forget()
-        self.summarylabel3_piece.place_forget()
+        self.summarylabel3_piece.place(x=self.square_virtual_size * 8+120,y=self.controls_height+112,height=16)
 
         self.movebutton = tk.Button(self,text="Move Piece",fg="black",background="black",font=("TKDefaultFont",22), command=self.movepiece)
-        self.movebutton.place(x=self.square_virtual_size * 8+50,y=384,height=20)
+        self.movebutton.place(x=self.square_virtual_size * 8+50,y=self.controls_height+144,height=20)
         self.movebutton.config(state="disabled")
+
+        # Current turn indicator
+        self.current_turn_indicator = tk.Label(self,text="Current Turn:",font=("TKDefaultFont",18),bg="bisque")
+        self.current_turn_indicator.place(x=self.square_virtual_size * 8+50,y=400,height=20)
+        self.current_turn_text = tk.Label(self,textvariable=self.current_turn_disp,font=("TKDefaultFont",11),bg="bisque")
+        self.current_turn_text.place(x=self.square_virtual_size * 8+70,y=420,height=20)
 
         # Binding configuration and left mouse click
         self.canvas.bind("<Button 1>",self.getcoords) # This allows the clicking to be tracked
@@ -182,32 +187,38 @@ class GameBoard(tk.Frame):
             self.selectsquare(x0,y0)
 
     def selectsquare(self, xcoords, ycoords):
+        valid = False
+        offset = self.square_virtual_size  # This is the number required to make it work......
+        col = math.floor(xcoords / offset)
+        row = math.floor(ycoords / offset)
         if self.squarechosen == False:
-            offset = self.square_virtual_size # This is the number required to make it work......
-            col = math.floor(xcoords/offset)
-            row = math.floor(ycoords/offset)
             if col <= 7 and row <= 7:
-                self.canvas.delete("move")
-                self.canvas.delete("highlight")
-                self.canvas.delete("example")
-                self.highlightsquare(row,col,"blue",'highlight')
-                self.square_text_x.set("Selected Square (x) = "+str(col+1))
-                self.square_text_y.set("Selected Square (y) = "+str(row+1))
-                found_key = []
-                if self.boardarray_pieces.loc[row,col] != 0:
-                    found_key = self.boardarray_pieces.loc[row,col].getid()
-                if found_key == []:
-                    occupier = "None"
-                    self.validclick = False
-                else:
-                    occupier = self.piece_description[found_key[0]]
-                    self.validclick = True
-                self.desiredsquare = [row,col]
-                self.square_text_displaypiece.set("Selected Piece = "+occupier)
-                self.square_text_displaypiece_bybutton.set(occupier)
+                if self.current_turn_check and self.colourarray.loc[row,col] != "b":
+                    valid = True
+                elif self.current_turn_check == "Black Pieces" and self.colourarray.loc[row,col] != "w":
+                    valid = True
+                if valid:
+                    self.canvas.delete("move")
+                    self.canvas.delete("highlight")
+                    self.canvas.delete("example")
+                    self.highlightsquare(row,col,"blue",'highlight')
+                    self.square_text_x.set("Selected Square (x) = "+str(col+1))
+                    self.square_text_y.set("Selected Square (y) = "+str(row+1))
+                    found_key = []
+                    if self.boardarray_pieces.loc[row,col] != 0:
+                        found_key = self.boardarray_pieces.loc[row,col].getid()
+                    if found_key == []:
+                        occupier = "None"
+                        self.validclick = False
+                    else:
+                        occupier = self.piece_description[found_key[0]]
+                        self.validclick = True
+                    self.desiredsquare = [row,col]
+                    self.square_text_displaypiece.set("Selected Piece = "+occupier)
+                    self.square_text_displaypiece_bybutton.set(occupier)
 
-                if self.initiated and found_key != []: # If a game has been started
-                    self.visualisemoves(row,col,found_key)
+                    if self.initiated and found_key != []: # If a game has been started
+                        self.visualisemoves(row,col,found_key)
             else:
                 # If the click is off of the square
                 self.square_text_x.set("Selected Square (x) = None")
@@ -385,6 +396,7 @@ class GameBoard(tk.Frame):
         self.canvas.create_image(0,0,image=self.imageholder["lock"],tags="lock2",anchor="c")
         self.canvas.coords("lock1",785,140)
         self.canvas.coords("lock2",785,160)
+        self.current_turn.set("White Pieces")
 
     def lockselection(self):
         if self.validclick and self.squarechosen == False:
@@ -419,6 +431,13 @@ class GameBoard(tk.Frame):
         self.canvas.delete("move")
         # Allows for the the piece valid spaces to be updated by the latest move
         self.update_piecemoves()
+        # Flip the turn
+        if self.current_turn_check == "w":
+            self.current_turn.set("Black Pieces")
+            self.current_turn_check = "b"
+        else:
+            self.current_turn.set("White Pieces")
+            self.current_turn_check = "w"
 
     def update_piecemoves(self):
         # Later on it would be good to add some optimisation here but for now it is enough to cycle though
