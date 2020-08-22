@@ -57,8 +57,6 @@ class Rook():
                     free = False
                 checkcol += dif
 
-
-
     def validsquares(self):
         # This method packs the current valid moves into a simple
         squares_array = []
