@@ -220,9 +220,10 @@ class GameBoard(tk.Frame):
                     if self.initiated and found_key != []: # If a game has been started
                         self.visualisemoves(row,col,found_key)
                 else:
-                    self.highlightsquare(row,col,"red",'highlight')
-                    time.sleep(0.5)
                     self.canvas.delete("highlight")
+                    self.canvas.delete("example")
+                    self.highlightsquare(row,col,"red",'highlight')
+
             else:
                 # If the click is off of the square
                 self.square_text_x.set("Selected Square (x) = None")
