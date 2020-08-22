@@ -31,7 +31,7 @@ class Rook():
         # This is pretty unoptimised at the moment but this probably won't interact with the algorithm so will only be triggered after each move
         self.moves = pd.DataFrame(np.zeros((8,8)),index=[0,1,2,3,4,5,6,7],columns=[0,1,2,3,4,5,6,7])
         # First we'll check the rows
-        for dif in [-1,1]: # Going up from the row and down
+        for dif in [-1,1]: # Going up from the row and then down
             checkrow = row+dif
             free = True
             while 0 <= checkrow <= 7 and free:
