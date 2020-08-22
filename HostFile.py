@@ -167,10 +167,10 @@ class GameBoard(tk.Frame):
         self.movebutton.config(state="disabled")
 
         # Current turn indicator
-        self.current_turn_indicator = tk.Label(self,text="Current Turn:",font=("TKDefaultFont",18),bg="bisque")
-        self.current_turn_indicator.place(x=self.square_virtual_size * 8+50,y=400,height=20)
-        self.current_turn_text = tk.Label(self,textvariable=self.current_turn_disp,font=("TKDefaultFont",11),bg="bisque")
-        self.current_turn_text.place(x=self.square_virtual_size * 8+70,y=420,height=20)
+        self.current_turn_indicator = tk.Label(self,text="Current Turn:",font=("TKDefaultFont",12),bg="bisque")
+        self.current_turn_indicator.place(x=self.square_virtual_size * 8+60,y=400,height=20)
+        self.current_turn_text = tk.Label(self,textvariable=self.current_turn_disp,font=("TKDefaultFont",16),bg="bisque")
+        self.current_turn_text.place(x=self.square_virtual_size * 8+52,y=422,height=20)
 
         # Binding configuration and left mouse click
         self.canvas.bind("<Button 1>",self.getcoords) # This allows the clicking to be tracked
@@ -193,9 +193,9 @@ class GameBoard(tk.Frame):
         row = math.floor(ycoords / offset)
         if self.squarechosen == False:
             if col <= 7 and row <= 7:
-                if self.current_turn_check and self.colourarray.loc[row,col] != "b":
+                if self.current_turn_check == "w" and self.colourarray.loc[row,col] != "b":
                     valid = True
-                elif self.current_turn_check == "Black Pieces" and self.colourarray.loc[row,col] != "w":
+                elif self.current_turn_check == "b" and self.colourarray.loc[row,col] != "w":
                     valid = True
                 if valid:
                     self.canvas.delete("move")
@@ -397,6 +397,7 @@ class GameBoard(tk.Frame):
         self.canvas.coords("lock1",785,140)
         self.canvas.coords("lock2",785,160)
         self.current_turn_disp.set("White Pieces")
+        self.current_turn_text.config(fg="black",bg="white")
 
     def lockselection(self):
         if self.validclick and self.squarechosen == False:
@@ -435,9 +436,11 @@ class GameBoard(tk.Frame):
         if self.current_turn_check == "w":
             self.current_turn_disp.set("Black Pieces")
             self.current_turn_check = "b"
+            self.current_turn_text.config(bg="black",fg="white")
         else:
             self.current_turn_disp.set("White Pieces")
             self.current_turn_check = "w"
+            self.current_turn_text.config(fg="black",bg="white")
 
     def update_piecemoves(self):
         # Later on it would be good to add some optimisation here but for now it is enough to cycle though
