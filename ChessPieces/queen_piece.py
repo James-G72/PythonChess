@@ -26,7 +26,51 @@ class Queen():
         self.turns += 1
 
     def updatemoves(self,row,col,boardarray,colourarray):
-        t = 1
+        # The queen is simply a combination of the bishop and castle moves
+        # First we perform the bishop checks
+        self.moves = pd.DataFrame(np.zeros((8,8)),index=[0,1,2,3,4,5,6,7],columns=[0,1,2,3,4,5,6,7])
+        for row_dif in [-1,1]:  # Going up from the row and then down
+            for col_dif in [-1,1]:  # Going up from the column and then down
+                checkrow = row + row_dif
+                checkcol = col + col_dif
+                free = True
+                while 0 <= checkrow <= 7 and 0 <= checkcol <= 7 and free:
+                    if colourarray.loc[checkrow,checkcol] == 0:  # The square is free
+                        self.moves.loc[checkrow,checkcol] = 1
+                    elif colourarray.loc[checkrow,checkcol] == self.colour:
+                        free = False
+                    else:
+                        self.moves.loc[checkrow,checkcol] = 1
+                        free = False
+                    checkrow += row_dif
+                    checkcol += col_dif
+
+        # Then we do the rook moves
+        for dif in [-1,1]:  # Going up from the row and then down
+            checkrow = row+dif
+            free = True
+            while 0 <= checkrow <= 7 and free:
+                if colourarray.loc[checkrow,col] == 0:  # The square is free
+                    self.moves.loc[checkrow,col] = 1
+                elif colourarray.loc[checkrow,col] == self.colour:
+                    free = False
+                else:
+                    self.moves.loc[checkrow,col] = 1
+                    free = False
+                checkrow += dif
+        # Then we check all of the columnns
+        for dif in [-1,1]:  # Going up from the row and down
+            checkcol = col+dif
+            free = True
+            while 0 <= checkcol <= 7 and free:
+                if colourarray.loc[row,checkcol] == 0:  # The square is free
+                    self.moves.loc[row,checkcol] = 1
+                elif colourarray.loc[row,checkcol] == self.colour:
+                    free = False
+                else:
+                    self.moves.loc[row,checkcol] = 1
+                    free = False
+                checkcol += dif
 
     def validsquares(self):
         # This method packs the current valid moves into a simple
