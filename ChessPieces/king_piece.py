@@ -19,6 +19,9 @@ class King():
         # Returns the id that corresponds to the correct image
         return self.type+self.id
 
+    def getcolour(self):
+        return self.colour
+
     def iterate(self):
         self.turns += 1
 
