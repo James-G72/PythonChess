@@ -452,6 +452,7 @@ class GameBoard(tk.Frame):
 # -----------------------  Section 2  -----------------------
 # Initialising the board
 playWindow = tk.Tk() # Root window is created
+playWindow.title("Chess Game")
 side_size = 200 # This affects the amount of space on the right of the board
 board = GameBoard(playWindow,side_size=side_size) # Initialising the game board within the root window
 board.pack(side="top", fill="both", expand="true", padx=0, pady=0) # Packing and displaying
