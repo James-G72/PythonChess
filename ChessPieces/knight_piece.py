@@ -32,7 +32,29 @@ class Knight():
         self.turns += 1
 
     def updatemoves(self,row,col,boardarray,colourarray):
-        t = 1
+        # The knight has the strangest moves but is quick to calculate
+        # 8 pieces to check in a symmetric pattern
+        self.moves = pd.DataFrame(np.zeros((8,8)),index=[0,1,2,3,4,5,6,7],columns=[0,1,2,3,4,5,6,7])
+        for long in [-2,2]:
+            for short in [-1,1]:
+                checkrow = row + short
+                checkcol = col + long
+                if 0 <= checkrow <= 7 and 0 <= checkcol <= 7:
+                    if colourarray.loc[checkrow,checkcol] == 0:  # The square is free
+                        self.moves.loc[checkrow,checkcol] = 1
+                    elif colourarray.loc[checkrow,checkcol] == self.colour:
+                        free = False
+                    else:
+                        self.moves.loc[checkrow,checkcol] = 1
+                checkrow = row + long
+                checkcol = col + short
+                if 0 <= checkrow <= 7 and 0 <= checkcol <= 7:
+                    if colourarray.loc[checkrow,checkcol] == 0:  # The square is free
+                        self.moves.loc[checkrow,checkcol] = 1
+                    elif colourarray.loc[checkrow,checkcol] == self.colour:
+                        free = False
+                    else:
+                        self.moves.loc[checkrow,checkcol] = 1
 
     def validsquares(self):
         # This method packs the current valid moves into a simple
