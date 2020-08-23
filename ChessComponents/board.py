@@ -1,19 +1,5 @@
-# Attempting to make a basic chess game whereby the computer randomly selects a next move.
-# This will form the framework for a later project that looks to pit a manual algorithm against a neural network (probably NEAT)
-# The original plan was to use matplotlib but for ease tkinter will be used instead as this makes adding controls very simple
-
-import numpy as np
-import pandas as pd
-import base64
 import tkinter as tk
-import center_tk_window as ctw
-import time
-import math
-# Importing the custom chess piece classes
-import ChessComponents
-
-# -----------------------  Section 1  -----------------------
-# Defining the GameBoard class and all functionality required to interact with the board
+import pandas as pd
 
 class GameBoard(tk.Frame):
     def __init__(self, parent, side_size, square_size=80, rows=8, columns=8, color1="#ffffff", color2="#474747"):
@@ -486,19 +472,3 @@ class GameBoard(tk.Frame):
             self.placepiece(name, self.pieces[name][0], self.pieces[name][1])
         self.canvas.tag_raise("piece")
         self.canvas.tag_lower("square")
-
-# -----------------------  Section 2  -----------------------
-# Initialising the board
-playWindow = tk.Tk() # Root window is created
-playWindow.title("Chess Game")
-side_size = 200 # This affects the amount of space on the right of the board
-board = GameBoard(playWindow,side_size=side_size) # Initialising the game board within the root window
-board.pack(side="top", fill="both", expand="true", padx=0, pady=0) # Packing and displaying
-playWindow.resizable(width=False, height=False) # This is a very important line that stops the window being edited which makes the layout much easier
-# Setting the geometry to include all of the buttons.
-# I will need to find a better way of doing this
-playWindow.geometry(str(board.size*8+side_size)+"x"+str(board.size*8))
-ctw.center_on_screen(playWindow) # This is a nifty module that centers the window for us
-board.defaults() # Setting the board for the start of a game
-
-playWindow.mainloop() # Main loop is set here

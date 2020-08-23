@@ -1,3 +1,4 @@
+from.board import GameBoard
 from .king_piece import King
 from .rook_piece import Rook
 from .knight_piece import Knight
