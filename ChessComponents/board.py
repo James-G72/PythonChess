@@ -1,5 +1,6 @@
 import tkinter as tk
 import pandas as pd
+import numpy as np
 
 class GameBoard(tk.Frame):
     def __init__(self, parent, side_size, square_size=80, rows=8, columns=8, color1="#ffffff", color2="#474747"):
