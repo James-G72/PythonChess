@@ -7,49 +7,63 @@ import math
 
 class GameBoard(tk.Frame):
     def __init__(self, parent, side_size, square_size=80, rows=8, columns=8, color1="#ffffff", color2="#474747"):
-        # Can be customised for different sizes but defaults to a classic chess board
-        # The default colors here are pure white and dark gray
+        # There is no need to edit any of the sizes. The default for side_size is 200
+        # The default colors here are pure white and a dark gray
 
-        # Assembling
-        self.rows = rows
-        self.columns = columns
-        self.size = square_size
-        self.side_size = side_size
-        self.color1 = color1
-        self.color2 = color2
-        self.pieces = {}
-        self.piece_description = {}
-        self.square_virtual_size = 77
-        self.initiated = False # Has a game started
-        self.boardarray_pieces = pd.DataFrame(np.zeros((8,8)),index=[0,1,2,3,4,5,6,7],columns=[0,1,2,3,4,5,6,7])
-        self.colourarray = pd.DataFrame(np.zeros((8,8)),index=[0,1,2,3,4,5,6,7],columns=[0,1,2,3,4,5,6,7])
-        self.current_turn_disp = tk.StringVar() # This hides the turn label until the game starts
-        self.current_turn_disp.set("")
-        self.current_turn_check = "w"
+        # ---------------- Section 1 : Assembling basic variables ----------------
+        self.rows = rows # 8
+        self.columns = columns # 8
+        self.size = square_size # This is the size in pixels of each square. This is essentially limited by the size of the chess piece images which are 60x60
+        # In my experience the actual size of the squares isn't 80 when drawn. This is likely an overlap issue but comes out at 77
+        self.square_virtual_size = 77 # So a variable is created to allow this to be carried throughout placement calculations
 
-        self.desiredsquare = [] # This is the square that the player wants to move
-        self.squarechosen = False
-        self.validclick = False
-        self.movesquare = []
+        self.side_size = side_size # The amount of blank space to the right of the board
+        self.color1 = color1 # Colour 1 is the colour in the top left of the board
+        self.color2 = color2 # Colour 2 is the colour in the top right of the board and cannot be pure black or the black pieces can't be seen
+        self.pieces = {} # This is a dictionary that holds information about the pieces
+        self.piece_description = {} # A dictionary used to relate the piece codes to readable descriptions for the user
+        self.initiated = False # Has a game started and effects the interpretation of clicks on the canvas
+
+        # All of the piece objects are held within a pandas DataFrame in their relative locations.
+        # This variable ultimately describes the state of the game
+        self.boardarray_pieces = pd.DataFrame(np.zeros((self.rows,self.columns)),index=range(0,self.rows),columns=range(0,self.columns))
+        # The boardarray variable is accompanied by a colourarray which contains only the colour information
+        # This is done to make referencing simpler when calculating moves.
+        # I am not sure how necessary this is but should be quicker ad eventually might be changed to enums to avoid string comparisons
+        self.colourarray = pd.DataFrame(np.zeros((self.rows,self.columns)),index=range(0,self.rows),columns=range(0,self.columns))
+        self.current_turn_disp = tk.StringVar() # Displays the piece group which is current goinng
+        self.current_turn_disp.set("") # Blank label won't display anything at first
+        self.current_turn_check = "w" # This regulates which pieces can be moved. White goes first
+
+        self.desiredsquare = [] # This is the square that the player wants to move and is locked using the select piece button
+        self.squarechosen = False # This is triggered when a square is chosen
+        self.validclick = False # This allows the board to know if a valid square to move to has been selected or not. This is stored on this level as it effects labels
+        self.movesquare = [] # This is the square that the player wants to move to
 
         # Adding all of the pictures from Images folder
-        imageholder = {}
-        piecelist = "bknpqr"
-        colorlist = "bw"
-        for f in piecelist:
-            for l in colorlist:
-                with open("Images/"+f+l+".gif","rb") as imageFile:
-                    string = base64.b64encode(imageFile.read())
-                if l == "w":
-                    imageholder[f.capitalize()] = tk.PhotoImage(data=string)
+        self.imageholder = {} # Creating a dictionary
+        piecelist = "bknpqr" # These are all the different types of pieces possible
+        colorlist = "bw" # The two colours
+        for f in piecelist: # Cycling through the pieces
+            for l in colorlist: # Alternating between the two colours
+                with open("Images/"+f+l+".gif","rb") as imageFile: # Opening the photo within the variable space
+                    # The images can't be stored as P or p in MacOS as theyre read the same
+                    # So the colour is introduced by adding b or w after the piece notation
+                    string = base64.b64encode(imageFile.read()) # Creating a string that describes the gif in base64 format
+                if l == "w": # Checking if this is a white piece
+                    # When adding the image to a dictionary we use proper notation and capitalise the letter if it is a white piece
+                    self.imageholder[f.capitalize()] = tk.PhotoImage(data=string)
                 else:
-                    imageholder[f] = tk.PhotoImage(data=string)
+                    # if it is a black piece then no change is required
+                    self.imageholder[f] = tk.PhotoImage(data=string)
+        # An additional image is a picture of a padlock to show that variables are locked
         with open("Images/lock.gif","rb") as imageFile:
             string = base64.b64encode(imageFile.read())
-        imageholder["lock"] = tk.PhotoImage(data=string)
-        self.imageholder = imageholder
+        self.imageholder["lock"] = tk.PhotoImage(data=string) # The picture is simply called lock in the dictionary
 
-        # Adding text for piece descriptions to a dictionary
+        # Adding text for piece descriptions to a dictionary which is then displayed to the user via a label
+        # This helps to explain the notation going on above and is designed to be compatible with FEN
+        # https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
         self.piece_description["r"] = "Black Castle"
         self.piece_description["R"] = "White Castle"
         self.piece_description["b"] = "Black Bishop"
@@ -63,24 +77,29 @@ class GameBoard(tk.Frame):
         self.piece_description["p"] = "Black Pawn"
         self.piece_description["P"] = "White Pawn"
 
-        # Assumed as square but can be other
-        c_width = columns * self.size
-        c_height = rows * self.size
+        # ---------------- Section 2 : Creating the board ----------------
+        # The whole board is drawn within the window in TkInter
+        # This a very long section defining a lot of stationary visuals for the GUI
+        # Most of the placement is just done by eye to make sure it all looks okay
+
+        c_width = columns * self.size # Width the canvas needs to be
+        c_height = rows * self.size # Height the canvas needs to be
 
         # Creating the canvas for the window
         tk.Frame.__init__(self, parent)
+        # This is self explanatory and provides a blank space upon which visual objects can be placed
         self.canvas = tk.Canvas(self, borderwidth=0, highlightthickness=0, width=c_width, height=c_height, background="bisque")
-        self.canvas.pack(side="top", fill="both", expand=True, padx=10, pady=10)
+        self.canvas.pack(side="top", fill="both", expand=True, padx=10, pady=10) # Packed with a small amount of padding either side
 
-        # Adding a quit button
-        self.quit_button = tk.Button(self,text="QUIT", fg="red", command=self.quit)
-        self.quit_button.place(x=self.square_virtual_size*8 + self.side_size/2, y=self.square_virtual_size*8-40, width=50, height=20)
+        # Adding a quit button to allow the window to be terminated. This has the same effect as clicking the cross
+        self.quit_button = tk.Button(self,text="Quit Game", fg="red", command=self.quit)
+        self.quit_button.place(x=self.square_virtual_size*8 + self.side_size/2-20, y=self.square_virtual_size*8-40, height=20)
 
         # Adding a square/piece selected tracker
-        self.canvas.create_rectangle(self.square_virtual_size*8 + 4,2,self.square_virtual_size*8 + 10+192,90,width=2)
-        self.selection_heading = tk.Label(self,text="Current Selection:",font=("TKDefaultFont",18),bg="bisque")
+        self.canvas.create_rectangle(self.square_virtual_size*8 + 4,2,self.square_virtual_size*8 + 10+192,90,width=2) # Just a hollow rectangle to denote an area
+        self.selection_heading = tk.Label(self,text="Current Selection:",font=("TKDefaultFont",18),bg="bisque") # Heading
         self.selection_heading.place(x=self.square_virtual_size*8 + 30, y=18, height=16)
-        self.square_text_x = tk.StringVar()
+        self.square_text_x = tk.StringVar() # StringVar variables can be dynamically changed
         self.square_text_x.set("Selected Square (x) = None")
         self.selected_displaysx = tk.Label(self,textvariable=self.square_text_x, bg="bisque")
         self.selected_displaysx.place(x=self.square_virtual_size*8 + 15, y=40, height=16)
@@ -94,7 +113,7 @@ class GameBoard(tk.Frame):
         self.selected_displaypiece.place(x=self.square_virtual_size*8 + 15, y=80, height=16)
 
         # Adding playmode selector
-        self.playmode_height = 100
+        self.playmode_height = 100 # Allows the whole rectangle to be moved up and down with contents
         self.canvas.create_rectangle(self.square_virtual_size*8 + 4,self.playmode_height,self.square_virtual_size*8 + 10+192,self.playmode_height+76,width=2)
         self.mode_heading = tk.Label(self,text="Playing Modes:",font=("TKDefaultFont",18),bg="bisque")
         self.mode_heading.place(x=self.square_virtual_size*8 + 45, y=self.playmode_height+15, height=20)
@@ -165,35 +184,35 @@ class GameBoard(tk.Frame):
         # Binding configuration and left mouse click
         self.canvas.bind("<Button 1>",self.getcoords) # This allows the clicking to be tracked
         # If a the user changes the window size then the refresh call is made. This is defined below
-        self.canvas.bind("<Configure>", self.refresh)
+        self.canvas.bind("<Configure>", self.refresh) # This shouldn't happen as the size has been locked
 
     def getcoords(self, event):
         global x0,y0
-        x0 = event.x
+        x0 = event.x # Event is a click
         y0 = event.y
         # This retrieves the current x and y coordinates in terms of pixels from the top left
-        # I am not sure if this is specific to mine but there is 77 pixels per square
-        if self.initiated:
-            self.selectsquare(x0,y0)
+        if self.initiated: # If the game is started....
+            self.selectsquare(x0,y0) # This information is passed into the selectsquare method
 
     def selectsquare(self, xcoords, ycoords):
-        valid = False
+        valid = False # Allows the alternating turns of the two players to be observed
         offset = self.square_virtual_size  # This is the number required to make it work......
-        col = math.floor(xcoords / offset)
+        col = math.floor(xcoords / offset) # Finding the square the player means
         row = math.floor(ycoords / offset)
-        if self.squarechosen == False:
-            if col <= 7 and row <= 7:
-                if self.current_turn_check == "w" and self.colourarray.loc[row,col] != "b":
-                    valid = True
+        if self.squarechosen == False: # If we haven't chosen one yet then choose one
+            if col <= 7 and row <= 7: # Have we clicked within the bounds of the board
+                if self.current_turn_check == "w" and self.colourarray.loc[row,col] != "b": # Checking if it is the right colour
+                    valid = True # Allowing access to additional code
                 elif self.current_turn_check == "b" and self.colourarray.loc[row,col] != "w":
                     valid = True
                 if valid:
-                    self.canvas.delete("move")
+                    self.canvas.delete("move") # Clearing all types of highlighting currently o the board
                     self.canvas.delete("highlight")
                     self.canvas.delete("example")
-                    self.highlightsquare(row,col,"blue",'highlight')
-                    self.square_text_x.set("Selected Square (x) = "+str(col+1))
+                    self.highlightsquare(row,col,"blue",'highlight') # Adding a blue edge around the square
+                    self.square_text_x.set("Selected Square (x) = "+str(col+1)) # Indicating the selected square
                     self.square_text_y.set("Selected Square (y) = "+str(row+1))
+                    # Then checking for what piece that is
                     found_key = []
                     if self.boardarray_pieces.loc[row,col] != 0:
                         found_key = self.boardarray_pieces.loc[row,col].getid()
@@ -203,19 +222,21 @@ class GameBoard(tk.Frame):
                     else:
                         occupier = self.piece_description[found_key[0]]
                         self.validclick = True
-                    self.desiredsquare = [row,col]
+                    self.desiredsquare = [row,col] # Saving this information in the desiredsquare variable
                     self.square_text_displaypiece.set("Selected Piece = "+occupier)
                     self.square_text_displaypiece_bybutton.set(occupier)
 
                     if self.initiated and found_key != []: # If a game has been started
-                        self.visualisemoves(row,col,found_key)
-                else:
-                    self.canvas.delete("highlight")
+                        self.visualisemoves(row,col,found_key) # Asking all possible moves to be displayed by calling this method
+                else: # Otherwise if the click wasn't valid
+                    self.canvas.delete("highlight") # Clear highlighting
                     self.canvas.delete("example")
-                    self.highlightsquare(row,col,"red",'highlight')
+                    self.highlightsquare(row,col,"red",'highlight') # Display a red edge
 
-            else:
-                # If the click is off of the square
+            else: # Otherwise we have clicked outside the board so we reset
+                self.canvas.delete("move")  # Clearing all types of highlighting currently o the board
+                self.canvas.delete("highlight")
+                self.canvas.delete("example")
                 self.square_text_x.set("Selected Square (x) = None")
                 self.square_text_y.set("Selected Square (y) = None")
                 self.square_text_displaypiece.set("Selected Piece = None")
@@ -224,67 +245,67 @@ class GameBoard(tk.Frame):
             offset = self.square_virtual_size # This is the number required to make it work......
             col = math.floor(xcoords/offset)
             row = math.floor(ycoords/offset)
-            target_squares = self.possiblemoves(self.desiredsquare[0],self.desiredsquare[1])
-            for plotter in target_squares:
-                if plotter[0] == str(row) and plotter [1] == str(col):
-                    self.canvas.delete("move")
-                    self.highlightsquare(row,col,"green",'move')
-                    self.movesquare = [row,col]
-                    self.summarylabel3.place(x=self.square_virtual_size * 8+50,y=self.controls_height+112,height=16)
+            target_squares = self.possiblemoves(self.desiredsquare[0],self.desiredsquare[1]) # Requesting the possible moves
+            for plotter in target_squares: # Cycling through them all
+                if plotter[0] == str(row) and plotter[1] == str(col): # Checking if the clicked square is one of them
+                    self.canvas.delete("move") # Deleting previous highlights
+                    self.highlightsquare(row,col,"green",'move') # Adding a new one in this square
+                    self.movesquare = [row,col] # Setting the move square to the one clicked
+                    self.summarylabel3.place(x=self.square_virtual_size * 8+50,y=self.controls_height+112,height=16) # Updating labels
                     self.summarylabel3_piece.place(x=self.square_virtual_size * 8+120,y=self.controls_height+112,height=16)
                     self.newsquare.set("[ "+str(self.movesquare[0]+1)+" , "+str(self.movesquare[1]+1)+" ]")
-                    self.movebutton.config(state="normal")
+                    self.movebutton.config(state="normal") # Unlocking the move button
 
     def highlightsquare(self,row,col,colour,tag):
-        offset = self.square_virtual_size
-        if colour == "green":
+        # Recieves a square to put a box around
+        offset = self.square_virtual_size # Finding the suze of a square
+        if colour == "green": # If the colour requested is green we use a lighter colour
             colour = "#00cc00" # This is just a lighter green than the standard "green" color to make it clearer on the board
-        self.canvas.create_line(col * offset,row * offset,col * offset+offset,row * offset,fill=colour,width=3,tag=tag)
+        self.canvas.create_line(col * offset,row * offset,col * offset+offset,row * offset,fill=colour,width=3,tag=tag) # Adding in the 4 lines
         self.canvas.create_line(col * offset,row * offset,col * offset,row * offset+offset,fill=colour,width=3,tag=tag)
         self.canvas.create_line(col * offset+offset,row * offset+offset,col * offset+offset,row * offset,fill=colour,width=3,tag=tag)
         self.canvas.create_line(col * offset+offset,row * offset+offset,col * offset,row * offset+offset,fill=colour,width=3,tag=tag)
 
     def visualisemoves(self,row,col,piece_code):
-        self.canvas.delete("example")
-        offset = self.square_virtual_size # This is the number required to make it work......
-        factor = 1 # This accounts for the double move on a pawns first turn
-        target_squares = self.possiblemoves(row,col)
-        for plotter in target_squares:
-            self.highlightsquare(int(plotter[0]),int(plotter[1]),"orange","example")
+        self.canvas.delete("example") # Removes all previously highlighted possible moves
+        offset = self.square_virtual_size
+        target_squares = self.possiblemoves(row,col) # Requesting possible moves for the piece in that sqaure
+        for plotter in target_squares: # Cycling through all squares
+            self.highlightsquare(int(plotter[0]),int(plotter[1]),"orange","example") # Adding an orange box around them
 
     def possiblemoves(self,row,col):
+        # This just puts a request in to the specific piece in that square
         squares = self.boardarray_pieces.loc[row,col].validsquares()
         return squares
 
     def addpiece(self, name, image, row, column):
         # We can add a piece to the board at the requested location
-        # This hijacks the function below by creating the specified piece first
-        self.canvas.create_image(0,0, image=image, tags=(name, "piece"), anchor="c")
-        self.placepiece(name, row, column)
+        self.canvas.create_image(0,0, image=image, tags=(name, "piece"), anchor="c") # First we create the image in the top left
+        self.placepiece(name, row, column) # Then we move it to the specified location
 
     def removepiece(self, name):
         # This is only used when a piece is taken
         # This change is purely aesthetic
-        self.canvas.delete(name)
+        self.canvas.delete(name) # Removes it based on a piece_id from a chesspiece object
         del self.pieces[name] # We also remove it from the pieces list
 
     def placepiece(self, name, row, col):
         '''Place a piece at the given row/column'''
-        self.pieces[name] = (row,col)
-        x0 = (col * self.size) + int(self.size/2)
+        self.pieces[name] = (row,col) # Saves where it was placed
+        x0 = (col * self.size) + int(self.size/2) # Works out where it should be in pixels
         y0 = (row * self.size) + int(self.size/2)
-        self.canvas.coords(name, x0, y0)
+        self.canvas.coords(name, x0, y0) # Sets it to that location
 
     def defaults(self):
         '''Sets the board up for a fresh game'''
         self.start_button.config(state="normal")
 
         # We assume that the board is populated and so try to remove pieces from each square
-        for row in range(0,8):
+        for row in range(0,8): # Through all squares
             for col in range(0,8):
-                if self.boardarray_pieces.loc[row,col] != 0:
-                    self.removepiece(self.boardarray_pieces.loc[row,col].getid())
-        self.boardarray_pieces = pd.DataFrame(np.zeros((8,8)),index=[0,1,2,3,4,5,6,7],columns=[0,1,2,3,4,5,6,7])
+                if self.boardarray_pieces.loc[row,col] != 0: # If the square isnt empty
+                    self.removepiece(self.boardarray_pieces.loc[row,col].getid()) # Remove the image
+        self.boardarray_pieces = pd.DataFrame(np.zeros((8,8)),index=[0,1,2,3,4,5,6,7],columns=[0,1,2,3,4,5,6,7]) # Reset the boardarray
 
         # Adding in pieces 1 by 1 and create the objects to store in boardarray
         # Castles
@@ -389,51 +410,51 @@ class GameBoard(tk.Frame):
         self.initiated = False # Essentially saying that the game is no longer active
 
     def initiate(self):
-        # Start the game here
+        # This function
         self.initiated = True # Indicates that the game has started
-        self.start_button.config(state="disabled")
-        print("Start")
-        self.player1.config(state="disabled")  # Disabling the drop-down options
+        self.start_button.config(state="disabled") # Make it so the start button can't be pressed again
+        self.player1.config(state="disabled") # Disabling the drop-down options
         self.player2.config(state="disabled")
         self.canvas.create_image(0,0, image=self.imageholder["lock"],tags="lock1", anchor="c") # Adding lock image
         self.canvas.create_image(0,0,image=self.imageholder["lock"],tags="lock2",anchor="c")
         self.canvas.coords("lock1",785,140)
         self.canvas.coords("lock2",785,160)
-        self.current_turn_disp.set("White Pieces")
+        self.current_turn_disp.set("White Pieces") # White starts first
         self.current_turn_text.config(fg="black",bg="white")
 
     def lockselection(self):
-        if self.validclick and self.squarechosen == False:
-            self.squarechosen = True
-            self.selectbuttonstring.set("Deselect Piece")
-            self.selected_displaypiece_bybutton.config(background="green")
+        # Activated by the select piece button
+        if self.validclick and self.squarechosen == False: # If the click was valid and a square hasn't been chosen
+            self.squarechosen = True # Indicate a square is chosen
+            self.selectbuttonstring.set("Deselect Piece") # Change the text to the opposite
+            self.selected_displaypiece_bybutton.config(background="green") # Use green to indicate a selection has been made
             self.summarylabel1.place(x=self.square_virtual_size * 8+50,y=self.controls_height+84,height=16)
             self.oldsquare.set("[ "+str(self.desiredsquare[0]+1)+" , "+str(self.desiredsquare[1]+1)+" ]")
             self.summarylabel1.place(x=self.square_virtual_size * 8+50,y=self.controls_height+84,height=16)
             self.summarylabel2.place(x=self.square_virtual_size * 8+50,y=self.controls_height+98,height=16)
             self.summarylabel2_piece.place(x=self.square_virtual_size * 8+120,y=self.controls_height+98,height=16)
-        elif self.squarechosen:
-            self.selectbuttonstring.set("Select Piece")
+        elif self.squarechosen: # If a piece was already chosen then we want to deselect
+            self.selectbuttonstring.set("Select Piece") # Revert the button
             self.selected_displaypiece_bybutton.config(background="bisque")
-            self.oldsquare.set("")
+            self.oldsquare.set("") # Clear square text
             self.newsquare.set("")
-            self.movebutton.config(state="disabled")
-            self.squarechosen = False
-        else:
+            self.movebutton.config(state="disabled") # disable the move button
+            self.squarechosen = False # Toggle square chosen
+        else: # If neither cases are met then we do nothing
             return
 
     def movepiece(self):
         # First we check if their is a piece that needs to be removed
-        if self.boardarray_pieces.loc[self.movesquare[0],self.movesquare[1]] != 0:
-            self.removepiece(self.boardarray_pieces.loc[self.movesquare[0],self.movesquare[1]].getid())
-        self.placepiece(self.boardarray_pieces.loc[self.desiredsquare[0],self.desiredsquare[1]].getid(),self.movesquare[0],self.movesquare[1])
-        self.boardarray_pieces.loc[self.movesquare[0],self.movesquare[1]] = self.boardarray_pieces.loc[self.desiredsquare[0],self.desiredsquare[1]]
-        self.boardarray_pieces.loc[self.desiredsquare[0],self.desiredsquare[1]] = 0
-        self.colourarray.loc[self.desiredsquare[0],self.desiredsquare[1]] = 0
-        self.colourarray.loc[self.movesquare[0],self.movesquare[1]] = self.boardarray_pieces.loc[self.movesquare[0],self.movesquare[1]].getcolour()
-        self.boardarray_pieces.loc[self.movesquare[0],self.movesquare[1]].iterate()
-        self.lockselection()
-        self.canvas.delete("highlight")
+        if self.boardarray_pieces.loc[self.movesquare[0],self.movesquare[1]] != 0: # Is the square full
+            self.removepiece(self.boardarray_pieces.loc[self.movesquare[0],self.movesquare[1]].getid()) # If so remove it
+        self.placepiece(self.boardarray_pieces.loc[self.desiredsquare[0],self.desiredsquare[1]].getid(),self.movesquare[0],self.movesquare[1]) # Move the original piece
+        self.boardarray_pieces.loc[self.movesquare[0],self.movesquare[1]] = self.boardarray_pieces.loc[self.desiredsquare[0],self.desiredsquare[1]] # Update boardarray
+        self.boardarray_pieces.loc[self.desiredsquare[0],self.desiredsquare[1]] = 0 # Set the old square to empty
+        self.colourarray.loc[self.desiredsquare[0],self.desiredsquare[1]] = 0 # Same for colour array
+        self.colourarray.loc[self.movesquare[0],self.movesquare[1]] = self.boardarray_pieces.loc[self.movesquare[0],self.movesquare[1]].getcolour() # Set colour array to the piece colour
+        self.boardarray_pieces.loc[self.movesquare[0],self.movesquare[1]].iterate() # Incriment a turn for the piece
+        self.lockselection() # Press "deselect piece"
+        self.canvas.delete("highlight") # Remove all highlighting
         self.canvas.delete("example")
         self.canvas.delete("move")
         # Allows for the the piece valid spaces to be updated by the latest move
@@ -450,8 +471,8 @@ class GameBoard(tk.Frame):
 
     def update_piecemoves(self):
         # Later on it would be good to add some optimisation here but for now it is enough to cycle though
-        for row in range(0,8):
-            for col in range(0,8):
+        for row in range(0,8): # Through all rows
+            for col in range(0,8): # And all columns
                 if self.boardarray_pieces.loc[row,col] != 0: # If the space is blank we ship it
                     # Otherwise we call the update function in each of the pieces
                     self.boardarray_pieces.loc[row,col].updatemoves(row,col,self.boardarray_pieces,self.colourarray)
