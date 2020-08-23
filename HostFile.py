@@ -273,7 +273,8 @@ class GameBoard(tk.Frame):
         self.placepiece(name, row, column)
 
     def removepiece(self, name):
-        # This is used not only for when a piece is removed from the board
+        # This is only used when a piece is taken
+        # This change is purely aesthetic
         self.canvas.delete(name)
         del self.pieces[name] # We also remove it from the pieces list
 
@@ -425,6 +426,9 @@ class GameBoard(tk.Frame):
             return
 
     def movepiece(self):
+        # First we check if their is a piece that needs to be removed
+        if self.boardarray_pieces.loc[self.movesquare[0],self.movesquare[1]] != 0:
+            self.removepiece(self.boardarray_pieces.loc[self.movesquare[0],self.movesquare[1]].getid())
         self.placepiece(self.boardarray_pieces.loc[self.desiredsquare[0],self.desiredsquare[1]].getid(),self.movesquare[0],self.movesquare[1])
         self.boardarray_pieces.loc[self.movesquare[0],self.movesquare[1]] = self.boardarray_pieces.loc[self.desiredsquare[0],self.desiredsquare[1]]
         self.boardarray_pieces.loc[self.desiredsquare[0],self.desiredsquare[1]] = 0

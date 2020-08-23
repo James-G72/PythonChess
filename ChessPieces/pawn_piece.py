@@ -38,6 +38,7 @@ class Pawn():
             checkrow = row-reach
         else:
             checkrow = row+reach
+        # There is an unsolved problem here whereby the pawn getting too close to the far end of the board throws an error
         if colourarray.loc[checkrow,col] == 0:
             self.moves.loc[checkrow,col] = 1
             if self.turns == 0: # Then the pawn has moved and therefore cannot move twice
