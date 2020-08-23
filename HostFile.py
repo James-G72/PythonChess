@@ -289,6 +289,14 @@ class GameBoard(tk.Frame):
         '''Sets the board up for a fresh game'''
         self.start_button.config(state="normal")
 
+        # We assume that the board is populated and so try to remove pieces from each square
+        for row in range(0,8):
+            for col in range(0,8):
+                if self.boardarray_pieces.loc[row,col] != 0:
+                    self.removepiece(self.boardarray_pieces.loc[row,col].getid())
+        self.boardarray_pieces = pd.DataFrame(np.zeros((8,8)),index=[0,1,2,3,4,5,6,7],columns=[0,1,2,3,4,5,6,7])
+
+
         # Adding in pieces 1 by 1 and create the objects to store in boardarray
         # Castles
         r1 = ChessPieces.Rook("r1",0,0)
