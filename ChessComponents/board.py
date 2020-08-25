@@ -437,6 +437,8 @@ class GameBoard(tk.Frame):
             self.desiredsquare = square1
             self.movesquare = square2
             self.movepiece()
+        else:
+            self.lockselection()
 
 
     def lockselection(self):

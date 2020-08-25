@@ -17,8 +17,8 @@ class Comp1:
                 square1 = [rand_row,rand_col]
                 possiblemoves = boardarray.loc[rand_row,rand_col].validsquares() # Request the possible moves
                 if possiblemoves != []:
-                    selection = random.randint(0,len(possiblemoves))
-                    square2 = [possiblemoves[selection][0],possiblemoves[selection][1]]
+                    selection = random.randint(0,len(possiblemoves)-1)
+                    square2 = [int(possiblemoves[selection][0]),int(possiblemoves[selection][1])]
                     selected = True
 
         return square1, square2
