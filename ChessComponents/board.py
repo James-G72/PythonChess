@@ -258,7 +258,7 @@ class GameBoard(tk.Frame):
 
     def highlightsquare(self,row,col,colour,tag):
         # Recieves a square to put a box around
-        offset = self.square_virtual_size # Finding the suze of a square
+        offset = self.square_virtual_size # Finding the sze of a square
         if colour == "green": # If the colour requested is green we use a lighter colour
             colour = "#00cc00" # This is just a lighter green than the standard "green" color to make it clearer on the board
         self.canvas.create_line(col * offset,row * offset,col * offset+offset,row * offset,fill=colour,width=3,tag=tag) # Adding in the 4 lines
@@ -421,6 +421,23 @@ class GameBoard(tk.Frame):
         self.canvas.coords("lock2",785,160)
         self.current_turn_disp.set("White Pieces") # White starts first
         self.current_turn_text.config(fg="black",bg="white")
+        # This line allows the opportunity to let a computer take a turn if there is a computer playing
+        self.Autoplayer = ChessComponents.Comp1()
+        if self.playmode1.get() == "Computer":
+            self.Autoplayer.colour_ref = "White Pieces"
+            self.Autoplayer.colour = "w"
+        elif self.playmode2.get() == "Computer":
+            self.Autoplayer.colour_ref = "Black Pieces"
+            self.Autoplayer.colour = "b"
+        self.calculateturn()
+
+    def calculateturn(self):
+        if self.Autoplayer.colour_ref == self.current_turn_disp.get():
+            square1, square2 = self.Autoplayer.taketurn(self.boardarray_pieces,self.colourarray)
+            self.desiredsquare = square1
+            self.movesquare = square2
+            self.movepiece()
+
 
     def lockselection(self):
         # Activated by the select piece button
@@ -468,6 +485,8 @@ class GameBoard(tk.Frame):
             self.current_turn_disp.set("White Pieces")
             self.current_turn_check = "w"
             self.current_turn_text.config(fg="black",bg="white")
+        # Invites the computer to take a turn
+        self.calculateturn()
 
     def update_piecemoves(self):
         # Later on it would be good to add some optimisation here but for now it is enough to cycle though
