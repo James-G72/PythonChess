@@ -422,19 +422,20 @@ class GameBoard(tk.Frame):
         self.current_turn_disp.set("White Pieces") # White starts first
         self.current_turn_text.config(fg="black",bg="white")
         # This line allows the opportunity to let a computer take a turn if there is a computer playing
-        self.Autoplayer = ChessComponents.Comp1()
-        self.moveengine = ChessComponents.Engine()
+        self.autoPlayer = ChessComponents.Comp1()
+        # This is a very complex line that uses a stockfish wrapper to allow stockfish to play the game
+        self.moveEngine = ChessComponents.Engine("/Users/jamesgower2/Documents/Stockfish-master/src/stockfish",param={'Threads': 2, 'Ponder': 'true'})
         if self.playmode1.get() == "Computer":
-            self.Autoplayer.colour_ref = "White Pieces"
-            self.Autoplayer.colour = "w"
+            self.autoPlayer.colour_ref = "White Pieces"
+            self.autoPlayer.colour = "w"
         elif self.playmode2.get() == "Computer":
-            self.Autoplayer.colour_ref = "Black Pieces"
-            self.Autoplayer.colour = "b"
+            self.autoPlayer.colour_ref = "Black Pieces"
+            self.autoPlayer.colour = "b"
         self.CalculateTurn()
 
     def CalculateTurn(self):
-        if self.Autoplayer.colour_ref == self.current_turn_disp.get():
-            self.desiredSquare, self.moveSquare = self.Autoplayer.taketurn(self.boardArrayPieces,self.colourArray)
+        if self.autoPlayer.colour_ref == self.current_turn_disp.get():
+            self.desiredSquare, self.moveSquare = self.autoPlayer.taketurn(self.boardArrayPieces,self.colourArray)
             self.MovePiece()
         else: # This is needed to unlock the selection before a players turn
             self.LockSelection()
