@@ -433,11 +433,9 @@ class GameBoard(tk.Frame):
 
     def calculateturn(self):
         if self.Autoplayer.colour_ref == self.current_turn_disp.get():
-            square1, square2 = self.Autoplayer.taketurn(self.boardarray_pieces,self.colourarray)
-            self.desiredsquare = square1
-            self.movesquare = square2
+            self.desiredsquare, self.movesquare = self.Autoplayer.taketurn(self.boardarray_pieces,self.colourarray)
             self.movepiece()
-        else:
+        else: # This is needed to unlock the selection before a players turn
             self.lockselection()
 
 
