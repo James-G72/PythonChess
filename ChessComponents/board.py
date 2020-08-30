@@ -410,7 +410,7 @@ class GameBoard(tk.Frame):
         self.initiated = False # Essentially saying that the game is no longer active
 
     def initiate(self):
-        # This function
+        # This function starts the game upon request
         self.initiated = True # Indicates that the game has started
         self.start_button.config(state="disabled") # Make it so the start button can't be pressed again
         self.player1.config(state="disabled") # Disabling the drop-down options
