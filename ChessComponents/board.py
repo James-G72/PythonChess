@@ -423,6 +423,7 @@ class GameBoard(tk.Frame):
         self.current_turn_text.config(fg="black",bg="white")
         # This line allows the opportunity to let a computer take a turn if there is a computer playing
         self.Autoplayer = ChessComponents.Comp1()
+        self.moveengine = ChessComponents.Engine()
         if self.playmode1.get() == "Computer":
             self.Autoplayer.colour_ref = "White Pieces"
             self.Autoplayer.colour = "w"
