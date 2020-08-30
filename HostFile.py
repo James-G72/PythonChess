@@ -14,7 +14,7 @@ board.pack(side="top", fill="both", expand="true", padx=0, pady=0) # Packing and
 playWindow.resizable(width=False, height=False) # This locks the size of the window so it cant be resized
 playWindow.geometry(str(board.size*8+side_size)+"x"+str(board.size*8)) # This locks the geometry including side_size to encompass the visuals
 ctw.center_on_screen(playWindow) # This is a nifty module that centers the window for us. There might be a better way to do it but it happens once at the start of the game
-board.defaults() # This actually initialises the chess game and adds all of the pieces etc
+board.Defaults() # This actually initialises the chess game and adds all of the pieces etc
 
 # As with most GUIs the game runs out of the host object which in this case is a GameBoard called board.
 # All the logic required to run a game of chess is included in either board or the chess piece objects it contains.
