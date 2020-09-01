@@ -61,6 +61,12 @@ class GameBoard(tk.Frame):
             string = base64.b64encode(imageFile.read())
         self.imageHolder["lock"] = tk.PhotoImage(data=string) # The picture is simply called lock in the dictionary
 
+        # To help convert between FEN and the row/col notation used for our board we create a DataFrame with the conversions
+        self.FENConversionCol = pd.DataFrame(np.zeros((1,8)),index=["Board"],columns=["a","b","c","d","e","f","g","h"])
+        self.FENConversionRow = pd.DataFrame(np.zeros((1,8)),index=["Board"],columns=["1","2","3","4","5","6","7","8"])
+        self.FENConversionCol.loc["Board",:] = [7,6,5,4,3,2,1,0]
+        self.FENConversionRow.loc["Board",:] = [7,6,5,4,3,2,1,0]
+
         # Adding text for piece descriptions to a dictionary which is then displayed to the user via a label
         # This helps to explain the notation going on above and is designed to be compatible with FEN
         # https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
@@ -125,10 +131,10 @@ class GameBoard(tk.Frame):
         self.playmode1.set("Person")
         self.playmode2 = tk.StringVar()
         self.playmode2.set("Computer")
-        self.player1 = tk.OptionMenu(self,self.playmode1,"Person","Computer")
+        self.player1 = tk.OptionMenu(self,self.playmode1,"Person","Computer","Random")
         self.player1.place(x=self.square_virtual_size*8 + 80, y=self.playmode_height+45, height=16)
         self.player1.config(background="bisque") # For optionmenu the bg abbreviation means in the dropdown
-        self.player2 = tk.OptionMenu(self,self.playmode2,"Person","Computer")
+        self.player2 = tk.OptionMenu(self,self.playmode2,"Person","Computer","Random")
         self.player2.place(x=self.square_virtual_size * 8+80,y=self.playmode_height+65,height=16)
         self.player2.config(background="bisque") # For optionmenu the bg abbreviation means in the dropdown
 
@@ -424,11 +430,13 @@ class GameBoard(tk.Frame):
         # This line allows the opportunity to let a computer take a turn if there is a computer playing
         self.autoPlayer = ChessComponents.Comp1()
         # This is a very complex line that uses a stockfish wrapper to allow stockfish to play the game
-        self.moveEngine = ChessComponents.Engine("/Users/jamesgower2/Documents/Stockfish-master/src/stockfish",param={'Threads': 2, 'Ponder': 'true'})
-        if self.playmode1.get() == "Computer":
+        self.stockfish = ChessComponents.Engine("/Users/jamesgower2/Documents/Stockfish-master/src/stockfish",param={'Threads': 2, 'Ponder': 'true'})
+        self.stockfish.ucinewgame() # Telling the engine that the game is starting
+        self.stockfish.setposition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1")
+        if self.playmode1.get() == "Computer" or self.playmode1.get() == "Random":
             self.autoPlayer.colour_ref = "White Pieces"
             self.autoPlayer.colour = "w"
-        elif self.playmode2.get() == "Computer":
+        elif self.playmode2.get() == "Computer" or self.playmode2.get() == "Random":
             self.autoPlayer.colour_ref = "Black Pieces"
             self.autoPlayer.colour = "b"
         self.CalculateTurn()
@@ -436,9 +444,23 @@ class GameBoard(tk.Frame):
     def CalculateTurn(self):
         if self.autoPlayer.colour_ref == self.current_turn_disp.get():
             self.desiredSquare, self.moveSquare = self.autoPlayer.taketurn(self.boardArrayPieces,self.colourArray)
+            stockfishMove = self.stockfish.bestmove()
+            self.desiredSquare, self.moveSquare = self.FENConvert("Move",stockfishMove)
+            # Having performed the FEN conversion the desired square and move square should have been set correctly
             self.MovePiece()
         else: # This is needed to unlock the selection before a players turn
             self.LockSelection()
+
+    def FENConvert(self,direction,target):
+        # This method converts the current board position to FEN or a stockfish move to a move in the notation used for this board
+        # In SAN the position "a1" is located at the bottom left of the board in the white corner
+        # For the row/col notation used here a1 corresponds to row = 7, col = 0. h8 -> row = 0, col = 7
+        if direction == "Move":
+            des = target["bestmove"][0:2] # Desired move in FEN
+            mov = target["bestmove"][2:4] # Desired move in FEN
+            print(des,mov)
+            return [int(self.FENConversionRow.loc["Board",des[1]]),int(self.FENConversionCol.loc["Board",des[0]])] , [int(self.FENConversionRow.loc["Board",mov[1]]),int(self.FENConversionCol.loc["Board",mov[0]])]
+
 
 
     def LockSelection(self):
