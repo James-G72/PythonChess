@@ -468,6 +468,24 @@ class GameBoard(tk.Frame):
             row2 = self.FENConversionRow.columns[np.flatnonzero(self.FENConversionRow.loc["Board",:] == mov[0])[0]]
             col2 = self.FENConversionCol.columns[np.flatnonzero(self.FENConversionCol.loc["Board",:] == mov[1])[0]]
             return str(col1)+str(row1)+str(col2)+str(row2) # Returning a
+        elif direction == "FullFEN":
+            # Here we create a FEN string such as this one: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1"
+            FEN = ""
+            for r in range(0,8):
+                empties = 0
+                for c in range(0,8):
+                    if self.boardArrayPieces.loc[r,c] != 0:
+                        if empties > 0:
+                            FEN += str(empties)
+                            empties = 0
+                        FEN += self.boardArrayPieces.loc[r,c].getid()[0]
+                    else:
+                        empties += 1
+                if empties > 0:
+                    FEN += str(empties)
+                if c != r != 7:
+                    FEN += "/"
+            return FEN
 
     def LockSelection(self):
         # Activated by the select piece button
