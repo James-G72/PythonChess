@@ -24,6 +24,8 @@ class GameBoard(tk.Frame):
         self.pieces = {} # This is a dictionary that holds information about the pieces
         self.pieceDescription = {} # A dictionary used to relate the piece codes to readable descriptions for the user
         self.initiated = False # Has a game started and effects the interpretation of clicks on the canvas
+        self.playerHolder = [0,0] # This is used to hold either stockfish or a custom algorithm [0] is w and [1] is b
+        self.holderEnum = 0 # 0 represents white
 
         # All of the piece objects are held within a pandas DataFrame in their relative locations.
         # This variable ultimately describes the state of the game
@@ -430,30 +432,36 @@ class GameBoard(tk.Frame):
         self.current_turn_disp.set("White Pieces") # White starts first
         self.current_turn_text.config(fg="black",bg="white")
         # This line allows the opportunity to let a computer take a turn if there is a computer playing
-        self.autoPlayer = ChessComponents.Comp1()
+        autoPlayer = ChessComponents.Comp1()
         # This is a very complex line that uses a stockfish wrapper to allow stockfish to play the game
-        self.stockfish = Stockfish("/Users/jamesgower2/Documents/Stockfish-master/src/stockfish")
-        self.stockfish.set_fen_position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
-        if self.playmode1.get() == "Computer" or self.playmode1.get() == "Random":
-            self.autoPlayer.colour_ref = "White Pieces"
-            self.autoPlayer.colour = "w"
-        elif self.playmode2.get() == "Computer" or self.playmode2.get() == "Random":
-            self.autoPlayer.colour_ref = "Black Pieces"
-            self.autoPlayer.colour = "b"
+        stockfish = Stockfish("/Users/jamesgower2/Documents/Stockfish-master/src/stockfish")
+        stockfish.set_fen_position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+        if self.playmode1.get() == "Computer":
+            self.playerHolder[0] = stockfish
+        elif self.playmode1.get() == "Random":
+            autoPlayer.colour_ref = "White Pieces"
+            autoPlayer.colour = "w"
+            self.playerHolder[0] = autoPlayer
+        if self.playmode2.get() == "Computer":
+            self.playerHolder[1] = stockfish
+        elif self.playmode2.get() == "Random":
+            autoPlayer.colour_ref = "Black Pieces"
+            autoPlayer.colour = "b"
+            self.playerHolder[1] = autoPlayer
         self.CalculateTurn()
 
     def CalculateTurn(self):
-        if self.autoPlayer.colour_ref == self.current_turn_disp.get():
+        if self.playerHolder[self.holderEnum] != 0: # Then the turn is automatic
             self.desiredSquare, self.moveSquare = self.autoPlayer.taketurn(self.boardArrayPieces,self.colourArray)
             # We also want to tell the stockfish engine what the latest move is
             # I tried doing this via the set_position method but it doest work so will now try passing full FEN in
-            current = self.stockfish.get_fen_position()
+            current = self.playerHolder[self.holderEnum].get_fen_position()
             print(current)
-            self.stockfish.set_fen_position(self.FENConvert("FullFEN"))
-            current = self.stockfish.get_fen_position()
+            self.playerHolder[self.holderEnum].set_fen_position(self.FENConvert("FullFEN"))
+            current = self.playerHolder[self.holderEnum].get_fen_position()
             print(current)
-            stockfishMove = self.stockfish.get_best_move()
-            print(self.stockfish.get_board_visual())
+            stockfishMove = self.playerHolder[self.holderEnum].get_best_move()
+            print(self.playerHolder[self.holderEnum].get_board_visual())
             self.desiredSquare, self.moveSquare = self.FENConvert("SAN2Board",stockfishMove)
             # Having performed the FEN conversion the desired square and move square should have been set correctly
             self.MovePiece()
@@ -553,11 +561,13 @@ class GameBoard(tk.Frame):
             self.current_turn_disp.set("Black Pieces")
             self.current_turn_check = "b"
             self.current_turn_text.config(bg="black",fg="white")
+            self.holderEnum += 1
         else:
             self.current_turn_disp.set("White Pieces")
             self.current_turn_check = "w"
             self.current_turn_text.config(fg="black",bg="white")
             self.fullMove += 1 # This is iterated after black has played their move
+            self.holderEnum -= 1
         # Invites the computer to take a turn
         self.CalculateTurn()
 

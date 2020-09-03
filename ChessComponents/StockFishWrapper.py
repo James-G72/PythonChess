@@ -1,178 +1,273 @@
 """
-    Simple Python Stockfish UCI wrapper
-    UCI chess engine http://www.stockfishchess.com/
-    :copyright: (c) 2016 by Dani Korniliev
-    :license: GNU General Public License, see LICENSE for more details.
+    This module implements the Stockfish class.
+
+    :copyright: (c) 2016-2020 by Ilya Zhelyabuzhsky.
+    :license: MIT, see LICENSE for more details.
 """
 
-
 import subprocess
-import sys
-import re
+from typing import Any, List, Optional
+
+DEFAULT_STOCKFISH_PARAMS = {
+    "Write Debug Log": "false",
+    "Contempt": 0,
+    "Min Split Depth": 0,
+    "Threads": 1,
+    "Ponder": "false",
+    "Hash": 16,
+    "MultiPV": 1,
+    "Skill Level": 20,
+    "Move Overhead": 30,
+    "Minimum Thinking Time": 20,
+    "Slow Mover": 80,
+    "UCI_Chess960": "false",
+}
 
 
-class Engine(subprocess.Popen):
-    """
-    Initiates Stockfish Chess Engine with default param and depth = '12' requires stockfish PATH
-    'param' & setoption function refers to https://github.com/iamjarret/pystockfish#details
-    'param' allows parameters to be specified by a dictionary object with 'Name' and 'value'
-    with value as an integer.
-    i.e. the following explicitly sets the default parameters
-    default_param = {
-            "Write Debug Log": "false",
-            "Contempt": 0,
-            "Threads": 1,
-            "Hash": 16,
-            "Min Split Depth": 0,
-            "Ponder": "false",
-            "MultiPV": 1,
-            "Skill Level": 20,
-            "Move Overhead": 30,
-            "Minimum Thinking Time": 20,
-            "Slow Mover": 80,
-            "Nodestime": 0,
-            "UCI_Chess960": "false",
-            "SyzygyPath": "",
-            "SyzygyProbeDepth": 1,
-            "Syzygy50MoveRule": 'true',
-            "SyzygyProbeLimit": 6
-        }
-    """
+class Stockfish:
+    """Integrates the Stockfish chess engine with Python."""
 
-    def __init__(self, stockfish_path='', depth=12, param={}):
-        try:
-            subprocess.Popen.__init__(self, stockfish_path, universal_newlines=True,
-                                      stdin=subprocess.PIPE,
-                                      stdout=subprocess.PIPE)
-        except Exception:
-            sys.exit('Install correct Stockfish PATH ')
+    def __init__(
+        self, path: str = "stockfish", depth: int = 2, parameters: dict = None
+    ) -> None:
+        self.stockfish = subprocess.Popen(
+            path, universal_newlines=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE
+        )
 
-        default_param = {
-            "Write Debug Log": "false",
-            "Contempt": 0,
-            "Threads": 1,
-            "Hash": 16,
-            "Min Split Depth": 0,
-            "Ponder": "false",
-            "MultiPV": 1,
-            "Skill Level": 20,
-            "Move Overhead": 30,
-            "Minimum Thinking Time": 20,
-            "Slow Mover": 80,
-            "Nodestime": 0,
-            "UCI_Chess960": "false",
-            "SyzygyPath": "",
-            "SyzygyProbeDepth": 1,
-            "Syzygy50MoveRule": 'true',
-            "SyzygyProbeLimit": 6
-        }
+        self._put("uci")
 
-        default_param.update(param)
-        self.param = default_param
-        for name, value in list(default_param.items()):
-            self.setoption(name, value)
-
-        self.uci()
         self.depth = str(depth)
+        self.info: str = ""
 
-    def send(self, command):
-        self.stdin.write(command + '\n')
-        self.stdin.flush()
+        if parameters is None:
+            parameters = {}
+        self._parameters = DEFAULT_STOCKFISH_PARAMS
+        self._parameters.update(parameters)
+        for name, value in list(self._parameters.items()):
+            self._set_option(name, value)
 
-    def flush(self):
-        self.stdout.flush()
+        self._start_new_game()
 
-    def uci(self):
-        self.send('uci')
+    def getid(self):
+        return "Stockfish"
+
+    def get_parameters(self) -> dict:
+        """Returns current board position.
+
+        Returns:
+            Dictionary of current Stockfish engine's parameters.
+        """
+        return self._parameters
+
+    def _start_new_game(self) -> None:
+        self._put("ucinewgame")
+        self._is_ready()
+        self.info = ""
+
+    def _put(self, command: str) -> None:
+        if not self.stockfish.stdin:
+            raise BrokenPipeError()
+        self.stockfish.stdin.write(f"{command}\n")
+        self.stockfish.stdin.flush()
+
+    def _read_line(self) -> str:
+        if not self.stockfish.stdout:
+            raise BrokenPipeError()
+        return self.stockfish.stdout.readline().strip()
+
+    def _set_option(self, name: str, value: Any) -> None:
+        self._put(f"setoption name {name} value {value}")
+        self._is_ready()
+
+    def _is_ready(self) -> None:
+        self._put("isready")
         while True:
-            line = self.stdout.readline().strip()
-            if line == 'uciok':
-                return line
+            if self._read_line() == "readyok":
+                return
 
-    def setoption(self, optionname, value):
-        """ Update default_param dict """
-        self.send('setoption name %s value %s' % (optionname, str(value)))
-        stdout = self.isready()
-        if stdout.find('No such') >= 0:
-            print("stockfish was unable to set option %s" % optionname)
+    def _go(self) -> None:
+        self._put(f"go depth {self.depth}")
 
-    def setposition(self, position):
-        """
-        The move format is in long algebraic notation.
-        Takes list of stirngs = ['e2e4', 'd7d5']
-        OR
-        FEN = 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1'
-        """
-        try:
-            if isinstance(position, list):
-                self.send('position startpos moves {}'.format(
-                    self.__listtostring(position)))
-                self.isready()
-            elif re.match('\s*^(((?:[rnbqkpRNBQKP1-8]+\/){7})[rnbqkpRNBQKP1-8]+)\s([b|w])\s([K|Q|k|q|-]{1,4})\s(-|[a-h][1-8])\s(\d+\s\d+)$', position):
-                regexList = re.match('\s*^(((?:[rnbqkpRNBQKP1-8]+\/){7})[rnbqkpRNBQKP1-8]+)\s([b|w])\s([K|Q|k|q|-]{1,4})\s(-|[a-h][1-8])\s(\d+\s\d+)$', position).groups()
-                fen = regexList[0].split("/")
-                if len(fen) != 8:
-                    raise ValueError("expected 8 rows in position part of fen: {0}".format(repr(fen)))
-
-                for fenPart in fen:
-                    field_sum = 0
-                    previous_was_digit, previous_was_piece = False, False
-
-                    for c in fenPart:
-                        if c in ["1", "2", "3", "4", "5", "6", "7", "8"]:
-                            if previous_was_digit:
-                                raise ValueError("two subsequent digits in position part of fen: {0}".format(repr(fen)))
-                            field_sum += int(c)
-                            previous_was_digit = True
-                            previous_was_piece = False
-                        elif c == "~":
-                            if not previous_was_piece:
-                                raise ValueError("~ not after piece in position part of fen: {0}".format(repr(fen)))
-                            previous_was_digit, previous_was_piece = False, False
-                        elif c.lower() in ["p", "n", "b", "r", "q", "k"]:
-                            field_sum += 1
-                            previous_was_digit = False
-                            previous_was_piece = True
-                        else:
-                            raise ValueError("invalid character in position part of fen: {0}".format(repr(fen)))
-
-                    if field_sum != 8:
-                        raise ValueError("expected 8 columns per row in position part of fen: {0}".format(repr(fen)))
-                self.send('position fen {}'.format(position))
-                self.isready()
-            else: raise ValueError("fen doesn`t match follow this example: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 ")
-
-        except ValueError as e:
-            print('\nCheck position correctness\n')
-            sys.exit(e.message)
+    def _go_time(self, time: int) -> None:
+        self._put(f"go movetime {time}")
 
     @staticmethod
-    def __listtostring(move):
-        return ' '.join(move).strip()
+    def _convert_move_list_to_str(moves: List[str]) -> str:
+        result = ""
+        for move in moves:
+            result += f"{move} "
+        return result.strip()
 
-    def go(self):
-        self.send('go depth {}'.format(self.depth))
+    def set_position(self, moves: List[str] = None) -> None:
+        """Sets current board position.
 
-    def isready(self):
-        self.send('isready')
+        Args:
+            moves: A list of moves to set this position on the board.
+                Must be in full algebraic notation.
+                example:
+                ['e2e4', 'e7e5']
+
+        Returns:
+            None
+        """
+        self._start_new_game()
+        if moves is None:
+            moves = []
+        self._put(f"position startpos moves {self._convert_move_list_to_str(moves)}")
+
+    def get_board_visual(self) -> str:
+        """Get a visual representation of the current board position
+            Note: "d" is a stockfish only command
+
+        Args:
+
+        Returns:
+            String of visual representation of the chessboard with its pieces in current position
+        """
+        self._put("d")
+        board_rep = ""
+        count_lines = 0
+        while count_lines < 17:
+            board_str = self._read_line()
+            if "+" in board_str or "|" in board_str:
+                count_lines += 1
+                board_rep += f"{board_str}\n"
+        return board_rep
+
+    def get_fen_position(self) -> str:
+        """Get current board position in Forsyth–Edwards notation (FEN).
+
+        Args:
+
+        Returns:
+            String with current position in Forsyth–Edwards notation (FEN)
+        """
+        self._put("d")
         while True:
-            line = self.stdout.readline().strip()
-            if line == 'readyok':
-                return line
+            text = self._read_line()
+            splitted_text = text.split(" ")
+            if splitted_text[0] == "Fen:":
+                return " ".join(splitted_text[1:])
 
-    def ucinewgame(self):
-        self.send('ucinewgame')
-        self.isready()
+    def set_skill_level(self, skill_level: int = 20) -> None:
+        """Sets current skill level of stockfish engine.
 
-    def bestmove(self):
-        info = ""
-        self.go()
+        Args:
+            skill_level: Skill Level option between 0 (weakest level) and 20 (full strength)
+
+        Returns:
+            None
+        """
+        self._set_option("Skill Level", skill_level)
+        self._parameters.update({"Skill Level": skill_level})
+
+    def set_fen_position(self, fen_position: str) -> None:
+        """Sets current board position in Forsyth–Edwards notation (FEN).
+
+        Args:
+            fen_position: FEN string of board position.
+
+        Returns:
+            None
+        """
+        self._start_new_game()
+        self._put(f"position fen {fen_position}")
+
+    def get_best_move(self) -> Optional[str]:
+        """Get best move with current position on the board.
+
+        Returns:
+            A string of move in algebraic notation or False, if it's a mate now.
+        """
+        self._go()
+        last_text: str = ""
         while True:
-            line = self.stdout.readline().strip().split(' ')
-            if line[0] == 'bestmove':
-                if self.param['Ponder'] == 'true':
-                    ponder = line[3]
+            text = self._read_line()
+            splitted_text = text.split(" ")
+            if splitted_text[0] == "bestmove":
+                if splitted_text[1] == "(none)":
+                    return None
+                self.info = last_text
+                return splitted_text[1]
+            last_text = text
+
+    def get_best_move_time(self, time: int = 1000) -> Optional[str]:
+        """Get best move with current position on the board after a determined time
+
+        Args:
+            time: Time for stockfish to determine best move in milliseconds (int)
+
+        Returns:
+            A string of move in algebraic notation or False, if it's a mate now.
+        """
+        self._go_time(time)
+        last_text: str = ""
+        while True:
+            text = self._read_line()
+            splitted_text = text.split(" ")
+            if splitted_text[0] == "bestmove":
+                if splitted_text[1] == "(none)":
+                    return None
+                self.info = last_text
+                return splitted_text[1]
+            last_text = text
+
+    def is_move_correct(self, move_value: str) -> bool:
+        """Checks new move.
+
+        Args:
+            move_value: New move value in algebraic notation.
+
+        Returns:
+            True, if new move is correct, else False.
+        """
+        self._put(f"go depth 1 searchmoves {move_value}")
+        while True:
+            text = self._read_line()
+            splitted_text = text.split(" ")
+            if splitted_text[0] == "bestmove":
+                if splitted_text[1] == "(none)":
+                    return False
                 else:
-                    ponder = None
-                return {'bestmove': line[1], 'ponder': ponder, 'info': ' '.join(info)}
-            info = line
+                    return True
+
+    def get_evaluation(self) -> dict:
+        """Evaluates current position
+
+        Returns:
+            A dictionary of the current advantage with "type" as "cp" (centipawns) or "mate" (checkmate in)
+        """
+
+        evaluation = dict()
+        fen = self.get_fen_position()
+        if "w" in fen:  # w can only be in FEN if it is whites move
+            compare = 1
+        else:  # stockfish shows advantage relative to current player, convention is to do white positive
+            compare = -1
+        self._put("position " + fen + "\n go")
+        while True:
+            text = self._read_line()
+            splitted_text = text.split(" ")
+            if splitted_text[0] == "info":
+                for n in range(len(splitted_text)):
+                    if splitted_text[n] == "score":
+                        evaluation = {
+                            "type": splitted_text[n + 1],
+                            "value": int(splitted_text[n + 2]) * compare,
+                        }
+            elif splitted_text[0] == "bestmove":
+                return evaluation
+
+    def set_depth(self, depth_value: int = 2) -> None:
+        """Sets current depth of stockfish engine.
+
+        Args:
+            depth_value: Depth option higher than 1
+
+        Returns:
+            None
+        """
+        self.depth = str(depth_value)
+
+    def __del__(self) -> None:
+        self.stockfish.kill()
