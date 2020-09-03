@@ -7,3 +7,4 @@ The code uses a class system and is run from HostFile.py.
 ## Current Functionality
 * The game is at the stage of being fully playable by two players
 * No AI implemented and the player/computer dropdown has no effect
+* Slight issue with pawns getting to the end of the board which needs to be fixed
