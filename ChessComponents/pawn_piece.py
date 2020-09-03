@@ -39,27 +39,28 @@ class Pawn():
         else:
             checkrow = row+reach
         # There is an unsolved problem here whereby the pawn getting too close to the far end of the board throws an error
-        if colourarray.loc[checkrow,col] == 0:
-            self.moves.loc[checkrow,col] = 1
-            if self.turns == 0: # Then the pawn has moved and therefore cannot move twice
-                if self.colour == "w":
-                    extrareach = checkrow-1
-                else:
-                    extrareach = checkrow+1
-                if colourarray.loc[extrareach,col] == 0:
-                    self.moves.loc[extrareach,col] = 1
-                else:
-                    self.moves.loc[extrareach,col] = 0
-        for checkcol in [col-1,col+1]:
-            if checkcol >=0 and checkcol <=7:
-                if colourarray.loc[checkrow,checkcol] != self.colour and colourarray.loc[checkrow,checkcol] != 0:
-                    self.moves.loc[checkrow,checkcol] = 1
-                else:
-                    self.moves.loc[checkrow,checkcol] = 0
-                if colourarray.loc[checkrow,checkcol] != self.colour and colourarray.loc[checkrow,checkcol] != 0:
-                    self.moves.loc[checkrow,checkcol] = 1
-                else:
-                    self.moves.loc[checkrow,checkcol] = 0
+        if 7 >= checkrow >= 0:
+            if colourarray.loc[checkrow,col] == 0:
+                self.moves.loc[checkrow,col] = 1
+                if self.turns == 0: # Then the pawn has moved and therefore cannot move twice
+                    if self.colour == "w":
+                        extrareach = checkrow-1
+                    else:
+                        extrareach = checkrow+1
+                    if colourarray.loc[extrareach,col] == 0:
+                        self.moves.loc[extrareach,col] = 1
+                    else:
+                        self.moves.loc[extrareach,col] = 0
+            for checkcol in [col-1,col+1]:
+                if checkcol >=0 and checkcol <=7:
+                    if colourarray.loc[checkrow,checkcol] != self.colour and colourarray.loc[checkrow,checkcol] != 0:
+                        self.moves.loc[checkrow,checkcol] = 1
+                    else:
+                        self.moves.loc[checkrow,checkcol] = 0
+                    if colourarray.loc[checkrow,checkcol] != self.colour and colourarray.loc[checkrow,checkcol] != 0:
+                        self.moves.loc[checkrow,checkcol] = 1
+                    else:
+                        self.moves.loc[checkrow,checkcol] = 0
 
     def validsquares(self):
         # This method packs the current valid moves into a simple
