@@ -4,7 +4,6 @@ import numpy as np
 import base64
 import ChessComponents
 import math
-from stockfish import Stockfish
 
 class GameBoard(tk.Frame):
     def __init__(self, parent, side_size, square_size=80, rows=8, columns=8, color1="#ffffff", color2="#474747"):
@@ -434,7 +433,7 @@ class GameBoard(tk.Frame):
         # This line allows the opportunity to let a computer take a turn if there is a computer playing
         autoPlayer = ChessComponents.Comp1()
         # This is a very complex line that uses a stockfish wrapper to allow stockfish to play the game
-        stockfish = Stockfish("/Users/jamesgower2/Documents/Stockfish-master/src/stockfish")
+        stockfish = ChessComponents.Stockfish("/Users/jamesgower2/Documents/Stockfish-master/src/stockfish")
         stockfish.set_fen_position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
         if self.playmode1.get() == "Computer":
             self.playerHolder[0] = stockfish
@@ -452,18 +451,17 @@ class GameBoard(tk.Frame):
 
     def CalculateTurn(self):
         if self.playerHolder[self.holderEnum] != 0: # Then the turn is automatic
-            self.desiredSquare, self.moveSquare = self.autoPlayer.taketurn(self.boardArrayPieces,self.colourArray)
-            # We also want to tell the stockfish engine what the latest move is
-            # I tried doing this via the set_position method but it doest work so will now try passing full FEN in
-            current = self.playerHolder[self.holderEnum].get_fen_position()
-            print(current)
-            self.playerHolder[self.holderEnum].set_fen_position(self.FENConvert("FullFEN"))
-            current = self.playerHolder[self.holderEnum].get_fen_position()
-            print(current)
-            stockfishMove = self.playerHolder[self.holderEnum].get_best_move()
-            print(self.playerHolder[self.holderEnum].get_board_visual())
-            self.desiredSquare, self.moveSquare = self.FENConvert("SAN2Board",stockfishMove)
-            # Having performed the FEN conversion the desired square and move square should have been set correctly
+            if self.playerHolder[self.holderEnum].getid() == "Stockfish":
+                # We also want to tell the stockfish engine what the latest move is
+                # I tried doing this via the set_position method but it doest work so will now try passing full FEN in
+                current = self.playerHolder[self.holderEnum].get_fen_position()
+                self.playerHolder[self.holderEnum].set_fen_position(self.FENConvert("FullFEN"))
+                current = self.playerHolder[self.holderEnum].get_fen_position()
+                stockfishMove = self.playerHolder[self.holderEnum].get_best_move()
+                self.desiredSquare, self.moveSquare = self.FENConvert("SAN2Board",stockfishMove)
+                # Having performed the FEN conversion the desired square and move square should have been set correctly
+            else:
+                self.desiredSquare, self.moveSquare = self.playerHolder[self.holderEnum].taketurn(self.boardArrayPieces,self.colourArray)
             self.MovePiece()
         else: # This is needed to unlock the selection before a players turn
             self.LockSelection()
