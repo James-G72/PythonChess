@@ -64,7 +64,7 @@ class GameBoard(tk.Frame):
         # To help convert between FEN and the row/col notation used for our board we create a DataFrame with the conversions
         self.FENConversionCol = pd.DataFrame(np.zeros((1,8)),index=["Board"],columns=["a","b","c","d","e","f","g","h"])
         self.FENConversionRow = pd.DataFrame(np.zeros((1,8)),index=["Board"],columns=["1","2","3","4","5","6","7","8"])
-        self.FENConversionCol.loc["Board",:] = [7,6,5,4,3,2,1,0]
+        self.FENConversionCol.loc["Board",:] = [0,1,2,3,4,5,6,7]
         self.FENConversionRow.loc["Board",:] = [7,6,5,4,3,2,1,0]
 
         # Adding text for piece descriptions to a dictionary which is then displayed to the user via a label
@@ -445,23 +445,30 @@ class GameBoard(tk.Frame):
         if self.autoPlayer.colour_ref == self.current_turn_disp.get():
             self.desiredSquare, self.moveSquare = self.autoPlayer.taketurn(self.boardArrayPieces,self.colourArray)
             stockfishMove = self.stockfish.bestmove()
-            self.desiredSquare, self.moveSquare = self.FENConvert("Move",stockfishMove)
+            print(stockfishMove["bestmove"])
+            self.desiredSquare, self.moveSquare = self.FENConvert("SAN2Board",stockfishMove)
             # Having performed the FEN conversion the desired square and move square should have been set correctly
             self.MovePiece()
         else: # This is needed to unlock the selection before a players turn
             self.LockSelection()
 
-    def FENConvert(self,direction,target):
+    def FENConvert(self,direction,target=None):
         # This method converts the current board position to FEN or a stockfish move to a move in the notation used for this board
         # In SAN the position "a1" is located at the bottom left of the board in the white corner
         # For the row/col notation used here a1 corresponds to row = 7, col = 0. h8 -> row = 0, col = 7
-        if direction == "Move":
+        if direction == "SAN2Board": # Converting an FEN move to one readable by the board
             des = target["bestmove"][0:2] # Desired move in FEN
             mov = target["bestmove"][2:4] # Desired move in FEN
-            print(des,mov)
             return [int(self.FENConversionRow.loc["Board",des[1]]),int(self.FENConversionCol.loc["Board",des[0]])] , [int(self.FENConversionRow.loc["Board",mov[1]]),int(self.FENConversionCol.loc["Board",mov[0]])]
-
-
+        elif direction == "Board2SAN": # Converting a player move to one readable by stockfish
+            des = self.desiredSquare
+            mov = self.moveSquare
+            # There is probably a better way to reverse search a dataframe but this works
+            row1 = self.FENConversionRow.columns[np.flatnonzero(self.FENConversionRow.loc["Board",:] == des[0])[0]]
+            col1 = self.FENConversionCol.columns[np.flatnonzero(self.FENConversionCol.loc["Board",:] == des[1])[0]]
+            row2 = self.FENConversionRow.columns[np.flatnonzero(self.FENConversionRow.loc["Board",:] == mov[0])[0]]
+            col2 = self.FENConversionCol.columns[np.flatnonzero(self.FENConversionCol.loc["Board",:] == mov[1])[0]]
+            return str(col1)+str(row1)+str(col2)+str(row2) # Returning a
 
     def LockSelection(self):
         # Activated by the select piece button
@@ -488,16 +495,20 @@ class GameBoard(tk.Frame):
         # First we check if their is a piece that needs to be removed
         if self.boardArrayPieces.loc[self.moveSquare[0],self.moveSquare[1]] != 0: # Is the square full
             self.RemovePiece(self.boardArrayPieces.loc[self.moveSquare[0],self.moveSquare[1]].getid()) # If so remove it
+        print(self.desiredSquare,self.moveSquare)
         self.PlacePiece(self.boardArrayPieces.loc[self.desiredSquare[0],self.desiredSquare[1]].getid(),self.moveSquare[0],self.moveSquare[1]) # Move the original piece
         self.boardArrayPieces.loc[self.moveSquare[0],self.moveSquare[1]] = self.boardArrayPieces.loc[self.desiredSquare[0],self.desiredSquare[1]] # Update boardarray
         self.boardArrayPieces.loc[self.desiredSquare[0],self.desiredSquare[1]] = 0 # Set the old square to empty
         self.colourArray.loc[self.desiredSquare[0],self.desiredSquare[1]] = 0 # Same for colour array
         self.colourArray.loc[self.moveSquare[0],self.moveSquare[1]] = self.boardArrayPieces.loc[self.moveSquare[0],self.moveSquare[1]].getcolour() # Set colour array to the piece colour
-        self.boardArrayPieces.loc[self.moveSquare[0],self.moveSquare[1]].iterate() # Incriment a turn for the piece
+        self.boardArrayPieces.loc[self.moveSquare[0],self.moveSquare[1]].iterate() # Increment a turn for the piece
         self.LockSelection() # Press "deselect piece"
         self.canvas.delete("highlight") # Remove all highlighting
         self.canvas.delete("example")
         self.canvas.delete("move")
+        # We also want to tell the stockfish engine what the latest move is
+        print([self.FENConvert("Board2SAN")])
+        self.stockfish.setposition([self.FENConvert("Board2SAN")])
         # Allows for the the piece valid spaces to be updated by the latest move
         self.UpdatePieceMoves()
         # Flip the turn
