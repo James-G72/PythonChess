@@ -6,6 +6,9 @@ class Comp1:
         self.colour_ref = ''
         self.colour = ''
 
+    def getid(self):
+        return "Random"
+
     def taketurn(self,boardarray,colourarray):
         # This allows the computer to be asked to take a turn
         # For now it remains random
