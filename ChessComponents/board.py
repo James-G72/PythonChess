@@ -541,14 +541,12 @@ class GameBoard(tk.Frame):
         # First we check if their is a piece that needs to be removed
         if self.boardArrayPieces.loc[self.moveSquare[0],self.moveSquare[1]] != 0: # Is the square full
             self.RemovePiece(self.boardArrayPieces.loc[self.moveSquare[0],self.moveSquare[1]].getid()) # If so remove it
-        print(self.desiredSquare,self.moveSquare)
         self.PlacePiece(self.boardArrayPieces.loc[self.desiredSquare[0],self.desiredSquare[1]].getid(),self.moveSquare[0],self.moveSquare[1]) # Move the original piece
         self.boardArrayPieces.loc[self.moveSquare[0],self.moveSquare[1]] = self.boardArrayPieces.loc[self.desiredSquare[0],self.desiredSquare[1]] # Update boardarray
         self.boardArrayPieces.loc[self.desiredSquare[0],self.desiredSquare[1]] = 0 # Set the old square to empty
         self.colourArray.loc[self.desiredSquare[0],self.desiredSquare[1]] = 0 # Same for colour array
         self.colourArray.loc[self.moveSquare[0],self.moveSquare[1]] = self.boardArrayPieces.loc[self.moveSquare[0],self.moveSquare[1]].getcolour() # Set colour array to the piece colour
         self.boardArrayPieces.loc[self.moveSquare[0],self.moveSquare[1]].iterate() # Increment a turn for the piece
-        self.LockSelection() # Press "deselect piece"
         self.canvas.delete("highlight") # Remove all highlighting
         self.canvas.delete("example")
         self.canvas.delete("move")
