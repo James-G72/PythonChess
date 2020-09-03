@@ -1,5 +1,5 @@
 # PythonChess
-This is a chess game made using TkInter. The idea is to use this as a platform for developing a simple chess AI player.
+This is a chess game made using TkInter. To run the game stockfish must be installed as an excecutable.
 The code uses a class system and is run from HostFile.py.
 
 <img width="952" alt="Screenshot 2020-08-23 at 12 14 39" src="https://user-images.githubusercontent.com/66065325/90977062-67c44000-e53a-11ea-943c-d1644a1bcf2a.png">
@@ -12,3 +12,4 @@ The code uses a class system and is run from HostFile.py.
 ## Known Issues
 * Pawns reaching the final square crashes the game which should be simple to fix
 * Clicking off the board when selecting a piece removes all highlighting but doesn't deselect the piece which is confusing
+* The game cannot currently be run without having stockfish downloaded and converted to an excecutable (even if stockfish isn't used). This code should be moved inside a specific method to prevent it from stopping the game being used for 2 players.
