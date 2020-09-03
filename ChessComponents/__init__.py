@@ -6,4 +6,3 @@ from .bishop_piece import Bishop
 from .queen_piece import Queen
 from .pawn_piece import Pawn
 from .BasicComputer import Comp1
-from.StockFishWrapper import Engine

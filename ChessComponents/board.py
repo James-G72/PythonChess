@@ -4,6 +4,7 @@ import numpy as np
 import base64
 import ChessComponents
 import math
+from stockfish import Stockfish
 
 class GameBoard(tk.Frame):
     def __init__(self, parent, side_size, square_size=80, rows=8, columns=8, color1="#ffffff", color2="#474747"):
@@ -430,9 +431,8 @@ class GameBoard(tk.Frame):
         # This line allows the opportunity to let a computer take a turn if there is a computer playing
         self.autoPlayer = ChessComponents.Comp1()
         # This is a very complex line that uses a stockfish wrapper to allow stockfish to play the game
-        self.stockfish = ChessComponents.Engine("/Users/jamesgower2/Documents/Stockfish-master/src/stockfish",param={'Threads': 2, 'Ponder': 'true'})
-        self.stockfish.ucinewgame() # Telling the engine that the game is starting
-        self.stockfish.setposition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1")
+        self.stockfish = Stockfish("/Users/jamesgower2/Documents/Stockfish-master/src/stockfish")
+        self.stockfish.set_fen_position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1")
         if self.playmode1.get() == "Computer" or self.playmode1.get() == "Random":
             self.autoPlayer.colour_ref = "White Pieces"
             self.autoPlayer.colour = "w"
@@ -444,8 +444,7 @@ class GameBoard(tk.Frame):
     def CalculateTurn(self):
         if self.autoPlayer.colour_ref == self.current_turn_disp.get():
             self.desiredSquare, self.moveSquare = self.autoPlayer.taketurn(self.boardArrayPieces,self.colourArray)
-            stockfishMove = self.stockfish.bestmove()
-            print(stockfishMove["bestmove"])
+            stockfishMove = self.stockfish.get_best_move()
             self.desiredSquare, self.moveSquare = self.FENConvert("SAN2Board",stockfishMove)
             # Having performed the FEN conversion the desired square and move square should have been set correctly
             self.MovePiece()
@@ -457,8 +456,8 @@ class GameBoard(tk.Frame):
         # In SAN the position "a1" is located at the bottom left of the board in the white corner
         # For the row/col notation used here a1 corresponds to row = 7, col = 0. h8 -> row = 0, col = 7
         if direction == "SAN2Board": # Converting an FEN move to one readable by the board
-            des = target["bestmove"][0:2] # Desired move in FEN
-            mov = target["bestmove"][2:4] # Desired move in FEN
+            des = target[0:2] # Desired move in FEN
+            mov = target[2:4] # Desired move in FEN
             return [int(self.FENConversionRow.loc["Board",des[1]]),int(self.FENConversionCol.loc["Board",des[0]])] , [int(self.FENConversionRow.loc["Board",mov[1]]),int(self.FENConversionCol.loc["Board",mov[0]])]
         elif direction == "Board2SAN": # Converting a player move to one readable by stockfish
             des = self.desiredSquare
@@ -508,7 +507,7 @@ class GameBoard(tk.Frame):
         self.canvas.delete("move")
         # We also want to tell the stockfish engine what the latest move is
         print([self.FENConvert("Board2SAN")])
-        self.stockfish.setposition([self.FENConvert("Board2SAN")])
+        self.stockfish.set_position([self.FENConvert("Board2SAN")])
         # Allows for the the piece valid spaces to be updated by the latest move
         self.UpdatePieceMoves()
         # Flip the turn
