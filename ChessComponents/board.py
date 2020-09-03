@@ -40,6 +40,7 @@ class GameBoard(tk.Frame):
         self.squareChosen = False # This is triggered when a square is chosen
         self.validClick = False # This allows the board to know if a valid square to move to has been selected or not. This is stored on this level as it effects labels
         self.moveSquare = [] # This is the square that the player wants to move to
+        self.fullMove = 1 # Tracks how many moves there have been
 
         # Adding all of the pictures from Images folder
         self.imageHolder = {} # Creating a dictionary
@@ -432,7 +433,7 @@ class GameBoard(tk.Frame):
         self.autoPlayer = ChessComponents.Comp1()
         # This is a very complex line that uses a stockfish wrapper to allow stockfish to play the game
         self.stockfish = Stockfish("/Users/jamesgower2/Documents/Stockfish-master/src/stockfish")
-        self.stockfish.set_fen_position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1")
+        self.stockfish.set_fen_position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
         if self.playmode1.get() == "Computer" or self.playmode1.get() == "Random":
             self.autoPlayer.colour_ref = "White Pieces"
             self.autoPlayer.colour = "w"
@@ -444,7 +445,15 @@ class GameBoard(tk.Frame):
     def CalculateTurn(self):
         if self.autoPlayer.colour_ref == self.current_turn_disp.get():
             self.desiredSquare, self.moveSquare = self.autoPlayer.taketurn(self.boardArrayPieces,self.colourArray)
+            # We also want to tell the stockfish engine what the latest move is
+            # I tried doing this via the set_position method but it doest work so will now try passing full FEN in
+            current = self.stockfish.get_fen_position()
+            print(current)
+            self.stockfish.set_fen_position(self.FENConvert("FullFEN"))
+            current = self.stockfish.get_fen_position()
+            print(current)
             stockfishMove = self.stockfish.get_best_move()
+            print(self.stockfish.get_board_visual())
             self.desiredSquare, self.moveSquare = self.FENConvert("SAN2Board",stockfishMove)
             # Having performed the FEN conversion the desired square and move square should have been set correctly
             self.MovePiece()
@@ -485,6 +494,20 @@ class GameBoard(tk.Frame):
                     FEN += str(empties)
                 if c != r != 7:
                     FEN += "/"
+            FEN += " "+str(self.current_turn_check)
+            # Need to add in a valid castling check but for now assume all castling possible
+            FEN += " KQkq "
+            # Adding En Passent square
+            if self.boardArrayPieces.loc[self.desiredSquare[0],self.desiredSquare[1]] != 0:
+                if self.boardArrayPieces.loc[self.desiredSquare[0],self.desiredSquare[1]].getid()[0] == "P" or self.boardArrayPieces.loc[self.desiredSquare[0],self.desiredSquare[1]].getid()[0] == "p":
+                    FEN += self.FENConversionCol.columns[np.flatnonzero(self.FENConversionCol.loc["Board",:] == self.moveSquare[1])[0]]
+                    FEN += str((int(self.FENConversionRow.columns[np.flatnonzero(self.FENConversionRow.loc["Board",:] == self.moveSquare[0])[0]])+int(self.FENConversionRow.columns[np.flatnonzero(self.FENConversionRow.loc["Board",:] == self.desiredSquare[0])[0]]))/2)
+                else:
+                    FEN += "-"
+            else:
+                FEN += "-"
+            # Finally the halfmoves and fullmoves are added
+            FEN += " 0 "+str(self.fullMove)
             return FEN
 
     def LockSelection(self):
@@ -523,9 +546,6 @@ class GameBoard(tk.Frame):
         self.canvas.delete("highlight") # Remove all highlighting
         self.canvas.delete("example")
         self.canvas.delete("move")
-        # We also want to tell the stockfish engine what the latest move is
-        print([self.FENConvert("Board2SAN")])
-        self.stockfish.set_position([self.FENConvert("Board2SAN")])
         # Allows for the the piece valid spaces to be updated by the latest move
         self.UpdatePieceMoves()
         # Flip the turn
@@ -537,6 +557,7 @@ class GameBoard(tk.Frame):
             self.current_turn_disp.set("White Pieces")
             self.current_turn_check = "w"
             self.current_turn_text.config(fg="black",bg="white")
+            self.fullMove += 1 # This is iterated after black has played their move
         # Invites the computer to take a turn
         self.CalculateTurn()
 
