@@ -49,3 +49,8 @@ class King():
                 if self.moves.loc[row,col]:
                     squares_array.append(str(row)+str(col))
         return squares_array
+
+    def checkCheck(self):
+        # This is unique to the king class and checks if this specific piece is in check
+        # Once check has been established checkmate is easy to check for the king but the use of other pieces must be checked at the board level
+        t=1
