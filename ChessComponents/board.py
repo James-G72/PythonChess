@@ -25,6 +25,7 @@ class GameBoard(tk.Frame):
         self.initiated = False # Has a game started and effects the interpretation of clicks on the canvas
         self.playerHolder = [0,0] # This is used to hold either stockfish or a custom algorithm [0] is w and [1] is b
         self.holderEnum = 0 # 0 represents white
+        self.checkPiece = [] # When empty there is no check. It is populated with the square of the king in check
 
         # All of the piece objects are held within a pandas DataFrame in their relative locations.
         # This variable ultimately describes the state of the game
@@ -550,8 +551,12 @@ class GameBoard(tk.Frame):
         self.canvas.delete("highlight") # Remove all highlighting
         self.canvas.delete("example")
         self.canvas.delete("move")
-        # Allows for the the piece valid spaces to be updated by the latest move
-        self.UpdatePieceMoves()
+        # Allows for the the piece valid spaces to be updated by the latest move. This also checks to see if either king is in check
+        check, attacks = self.UpdatePieceMoves()
+        if check:
+            # Then of the kings is in check. This should only ever be 1 piece
+            # We know which king by the attacks array but it should also only ever be the king whos turn it currently is
+            self.checkPiece = attacks
         # Flip the turn
         if self.current_turn_check == "w":
             self.current_turn_disp.set("Black Pieces")
@@ -569,11 +574,21 @@ class GameBoard(tk.Frame):
 
     def UpdatePieceMoves(self):
         # Later on it would be good to add some optimisation here but for now it is enough to cycle though
+        check = False
         for row in range(0,8): # Through all rows
             for col in range(0,8): # And all columns
                 if self.boardArrayPieces.loc[row,col] != 0: # If the space is blank we ship it
                     # Otherwise we call the update function in each of the pieces
                     self.boardArrayPieces.loc[row,col].updatemoves(row,col,self.boardArrayPieces,self.colourArray)
+        # A quirk of doing it this way is that the piece moves need to be updated for checkCheck to work.
+        # This also means that the kings move updates have to happen after all other pieces have been updated
+        for row in range(0,8):  # Through all rows
+            for col in range(0,8):  # And all columns
+                if self.boardArrayPieces.loc[row,col] != 0:  # If the space is blank we ship it
+                    if self.boardArrayPieces.loc[row,col].getid()[0] == "K" or self.boardArrayPieces.loc[row,col].getid()[0] == "k":
+                        self.boardArrayPieces.loc[row,col].updatemoves(row,col,self.boardArrayPieces,self.colourArray)
+                        check, attacks = self.boardArrayPieces.loc[row,col].checkCheck(self.boardArrayPieces,row,col)
+        return check, attacks
 
     def refresh(self, event):
         '''Redraw the board, possibly in response to window being resized'''
