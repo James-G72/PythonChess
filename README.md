@@ -6,7 +6,8 @@ The code uses a class system and is run from HostFile.py.
 
 ## Current Functionality
 * The computer cannot play itself properly but the player can play against either Stockfish or a random move generator
-* There is no way for the game to end as taking pieces has no significance and the king class has no check logic coded
+* There is no way for the game to end as taking pieces has no significance
+* The game is capable of knowing if a king is in check and if a king cannot move
 * The current stockfish wrapper has the ability to return board assesments in favour of either black or white which could be used for training
 
 ## Known Issues
