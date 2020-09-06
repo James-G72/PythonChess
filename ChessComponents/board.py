@@ -26,6 +26,7 @@ class GameBoard(tk.Frame):
         self.playerHolder = [0,0] # This is used to hold either stockfish or a custom algorithm [0] is w and [1] is b
         self.holderEnum = 0 # 0 represents white
         self.checkPiece = [] # When empty there is no check. It is populated with the square of the king in check
+        self.checkMate = False
 
         # All of the piece objects are held within a pandas DataFrame in their relative locations.
         # This variable ultimately describes the state of the game
@@ -552,11 +553,15 @@ class GameBoard(tk.Frame):
         self.canvas.delete("example")
         self.canvas.delete("move")
         # Allows for the the piece valid spaces to be updated by the latest move. This also checks to see if either king is in check
-        check, attacks = self.UpdatePieceMoves()
+        check = self.UpdatePieceMoves()
         if check:
             # Then of the kings is in check. This should only ever be 1 piece
             # We know which king by the attacks array but it should also only ever be the king whos turn it currently is
-            self.checkPiece = attacks
+            if self.boardArrayPieces.loc[self.checkPiece[0][0],self.checkPiece[0][1]].validsquares() == []:
+                # Setting both the king piece checkMate marker and the board check mate marker to true
+                self.boardArrayPieces.loc[self.checkPiece[0][0],self.checkPiece[0][1]].checkMate = True
+                self.checkMate = True
+                print("Game over!")
         # Flip the turn
         if self.current_turn_check == "w":
             self.current_turn_disp.set("Black Pieces")
@@ -574,7 +579,10 @@ class GameBoard(tk.Frame):
 
     def UpdatePieceMoves(self):
         # Later on it would be good to add some optimisation here but for now it is enough to cycle though
+        check_temp = False
         check = False
+        self.checkPiece = []
+        self.checkMate = False
         for row in range(0,8): # Through all rows
             for col in range(0,8): # And all columns
                 if self.boardArrayPieces.loc[row,col] != 0: # If the space is blank we ship it
@@ -587,8 +595,13 @@ class GameBoard(tk.Frame):
                 if self.boardArrayPieces.loc[row,col] != 0:  # If the space is blank we ship it
                     if self.boardArrayPieces.loc[row,col].getid()[0] == "K" or self.boardArrayPieces.loc[row,col].getid()[0] == "k":
                         self.boardArrayPieces.loc[row,col].updatemoves(row,col,self.boardArrayPieces,self.colourArray)
-                        check, attacks = self.boardArrayPieces.loc[row,col].checkCheck(self.boardArrayPieces,row,col)
-        return check, attacks
+                        check_temp, attacks = self.boardArrayPieces.loc[row,col].checkCheck(self.boardArrayPieces,row,col)
+                        if check_temp:
+                            check = True
+                            self.checkPiece = attacks
+
+
+        return check
 
     def refresh(self, event):
         '''Redraw the board, possibly in response to window being resized'''

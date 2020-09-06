@@ -12,6 +12,7 @@ class King():
         else:
             self.colour = "b" # Black
         self.check = False
+        self.checkMate = False
 
         self.moves = pd.DataFrame(np.zeros((8,8)),index=[0,1,2,3,4,5,6,7],columns=[0,1,2,3,4,5,6,7])
 
