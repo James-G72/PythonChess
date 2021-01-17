@@ -71,6 +71,7 @@ class GameBoard(tk.Frame):
         self.FENConversionRow = pd.DataFrame(np.zeros((1,8)),index=["Board"],columns=["1","2","3","4","5","6","7","8"])
         self.FENConversionCol.loc["Board",:] = [0,1,2,3,4,5,6,7]
         self.FENConversionRow.loc["Board",:] = [7,6,5,4,3,2,1,0]
+        self.debug_set = False # This is a debugger toggle used to set the board to any state for testing
 
         # Adding text for piece descriptions to a dictionary which is then displayed to the user via a label
         # This helps to explain the notation going on above and is designed to be compatible with FEN
@@ -105,6 +106,9 @@ class GameBoard(tk.Frame):
         # Adding a quit button to allow the window to be terminated. This has the same effect as clicking the cross
         self.quit_button = tk.Button(self,text="Quit Game", fg="red", command=self.quit)
         self.quit_button.place(x=self.square_virtual_size*8 + self.side_size/2-20, y=self.square_virtual_size*8-40, height=20)
+        # Adding a debug mode toggle which allows an FEN board to be set from a box
+        self.debug_button = tk.Button(self,text="Debug", fg="blue", font=("TKDefaultFont",8), command=self.Debug)
+        self.debug_button.place(x=self.square_virtual_size*8 + self.side_size-24, y=self.square_virtual_size*8, height=10)
 
         # Adding a square/piece selected tracker
         self.canvas.create_rectangle(self.square_virtual_size*8 + 4,2,self.square_virtual_size*8 + 10+192,90,width=2) # Just a hollow rectangle to denote an area
@@ -420,6 +424,22 @@ class GameBoard(tk.Frame):
         self.canvas.delete("lock2")
         self.initiated = False # Essentially saying that the game is no longer active
 
+    def Debug(self): # Has 2 modes depending on the polarity of set
+        if self.debug_set == True: # Then we excecute the contents of the text box
+            FEN_requested = self.debug_text.get()
+            if FEN_requested != "": # This means nothing has been entered into the field.
+                # I feel its best to use a try here as it is quite likely that something wrong will be entered.
+                try:
+                    stockfish.set_fen_position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+
+            self.debug_text.destroy()
+            self.debug_set = False # Toggle
+        else: # Then we display the text box and button
+            self.debug_text = tk.Entry(self)
+            self.debug_text.place(x=self.square_virtual_size * 8+15,y=self.square_virtual_size * 8-15,height=10)
+            self.FEN_set_button = tk.Button(self,text="Set Board",fg="black",background="white",font=("TKDefaultFont",8), command=self.Debug)
+            self.debug_set = True # Toggle
+
     def Initiate(self):
         # This function starts the game upon request
         self.initiated = True # Indicates that the game has started
@@ -518,6 +538,9 @@ class GameBoard(tk.Frame):
             FEN += " 0 "+str(self.fullMove)
             return FEN
 
+    def SetBoardfromFEN(self,FEN_requested):
+
+
     def LockSelection(self):
         # Activated by the select piece button
         if self.validClick and self.squareChosen == False: # If the click was valid and a square hasn't been chosen
@@ -555,7 +578,7 @@ class GameBoard(tk.Frame):
         # Allows for the the piece valid spaces to be updated by the latest move. This also checks to see if either king is in check
         check = self.UpdatePieceMoves()
         if check:
-            # Then of the kings is in check. This should only ever be 1 piece
+            # Then 1 of the kings is in check. This should only ever be 1 piece
             # We know which king by the attacks array but it should also only ever be the king whos turn it currently is
             if self.boardArrayPieces.loc[self.checkPiece[0][0],self.checkPiece[0][1]].validsquares() == []:
                 # Setting both the king piece checkMate marker and the board check mate marker to true
