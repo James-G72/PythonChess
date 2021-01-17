@@ -429,15 +429,13 @@ class GameBoard(tk.Frame):
             FEN_requested = self.debug_text.get()
             if FEN_requested != "": # This means nothing has been entered into the field.
                 # I feel its best to use a try here as it is quite likely that something wrong will be entered.
-                try:
-                    stockfish.set_fen_position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+                SetBoardfromFEN(self,FEN_requested)
 
             self.debug_text.destroy()
             self.debug_set = False # Toggle
         else: # Then we display the text box and button
-            self.debug_text = tk.Entry(self)
+            self.debug_text = tk.Entry(self, font=("TKDefaultFont",8))
             self.debug_text.place(x=self.square_virtual_size * 8+15,y=self.square_virtual_size * 8-15,height=10)
-            self.FEN_set_button = tk.Button(self,text="Set Board",fg="black",background="white",font=("TKDefaultFont",8), command=self.Debug)
             self.debug_set = True # Toggle
 
     def Initiate(self):
@@ -539,6 +537,40 @@ class GameBoard(tk.Frame):
             return FEN
 
     def SetBoardfromFEN(self,FEN_requested):
+        # This is a reasonably rare task so we will encorperate it all into one function
+        # Due to the board needing for objects to be created individually e.g. r1 for a rook we need all pieces to be present and then we can move them
+        self.Defaults() # Full reset
+        storage = pd.DataFrame(np.zeros((2,16))) # Temporarily hold all the pieces
+        counter = 0
+        for row in [0,1,6,7]:
+            for col in range(0,8):
+                if row < 2:
+                    storage.loc[0,counter] = self.boardArrayPieces.loc[row,col]
+                    self.boardArrayPieces.loc[row,col] = 0
+                    count += 1
+                else:
+                    storage.loc[1,counter-16] = self.boardArrayPieces.loc[row,col]
+                    self.boardArrayPieces.loc[row,col] = 0
+                    count += 1
+        if FEN_requested[0].isnumeric():
+            delay = int(FEN_requested[0])
+        for row in range(0,self.rows):
+            for col in range(0,self.columns):
+                if delay > 0:
+                    delay -= 1
+                else:
+                    if FEN_requested[0].isnumeric():
+                        delay = int(FEN_requested[0])
+                    else:
+                        piece = FEN_requested[row*8+col] # A FEN letter
+                        if piece.isupper():
+                            row_stor = 1
+                        else:
+                            row_stor = 0
+                        for col_stor in range(0,storage.shape[1]):
+                            if storage.loc[row_stor,col_stor].getid()[0] == piece:
+                                self.boardArrayPieces.loc[row,col] = storage.loc[row_stor,col_stor]
+                                storage.loc[row_stor,col_stor] = 0
 
 
     def LockSelection(self):
