@@ -1,2 +1,3 @@
 # Black king trapped check-mate
 7k/R7/5N1Q/8/8/8/8/1NB1KB2 b - - 0 1
+rnb1kbnr/1p1pp1p1/5p1p/1ppq4/1P2P2P/6P1/P1PP1P2/RNBQKBN1  b - - 0 1

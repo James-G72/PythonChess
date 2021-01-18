@@ -448,8 +448,12 @@ class GameBoard(tk.Frame):
         self.canvas.create_image(0,0,image=self.imageHolder["lock"],tags="lock2",anchor="c")
         self.canvas.coords("lock1",785,140)
         self.canvas.coords("lock2",785,160)
-        self.current_turn_disp.set("White Pieces") # White starts first
-        self.current_turn_text.config(fg="black",bg="white")
+        if self.current_turn_check == "w":
+            self.current_turn_disp.set("White Pieces") # White starts first
+            self.current_turn_text.config(fg="black",bg="white")
+        else:
+            self.current_turn_disp.set("Black Pieces") # White starts first
+            self.current_turn_text.config(fg="white",bg="black")
         # This line allows the opportunity to let a computer take a turn if there is a computer playing
         autoPlayer = ChessComponents.Comp1()
         # This is a very complex line that uses a stockfish wrapper to allow stockfish to play the game
@@ -541,22 +545,28 @@ class GameBoard(tk.Frame):
         # Due to the board needing for objects to be created individually e.g. r1 for a rook we need all pieces to be present and then we can move them
         self.Defaults() # Full reset
         storage = pd.DataFrame(np.zeros((2,16))) # Temporarily hold all the pieces
+        self.colourArray = pd.DataFrame(np.zeros((8,8)),index=[0,1,2,3,4,5,6,7],columns=[0,1,2,3,4,5,6,7])
         counter = 0
         for row in [0,1,6,7]:
             for col in range(0,8):
                 if row < 2:
                     storage.loc[0,counter] = self.boardArrayPieces.loc[row,col]
+                    self.RemovePiece(self.boardArrayPieces.loc[row,col].getid())  # Remove the image
                     self.boardArrayPieces.loc[row,col] = 0
                     counter += 1
                 else:
                     storage.loc[1,counter-16] = self.boardArrayPieces.loc[row,col]
+                    self.RemovePiece(self.boardArrayPieces.loc[row,col].getid())  # Remove the image
                     self.boardArrayPieces.loc[row,col] = 0
                     counter += 1
         if FEN_requested[0].isnumeric():
             delay = int(FEN_requested[0])
+        else:
+            delay = 0
         counter = 0
         for row in range(0,self.rows):
-            counter += 1 # We iterate the counter here as we need to skip over all slashes
+            if row != 0 and col != 0:
+                counter += 1 # We iterate the counter here as we need to skip over all slashes
             for col in range(0,self.columns):
                 if delay > 0:
                     delay -= 1
@@ -575,8 +585,19 @@ class GameBoard(tk.Frame):
                             if storage.loc[row_stor,col_stor] != 0:
                                 if storage.loc[row_stor,col_stor].getid()[0] == piece:
                                     self.boardArrayPieces.loc[row,col] = storage.loc[row_stor,col_stor]
+                                    self.AddPiece(storage.loc[row_stor,col_stor].getid(),self.imageHolder[storage.loc[row_stor,col_stor].getid()[0]],row,col)
                                     storage.loc[row_stor,col_stor] = 0
+                                    if row_stor == 1: # Then it's a white piece
+                                        self.colourArray.loc[row,col] = "w"
+                                    else:
+                                        self.colourArray.loc[row,col] = "b"
                                     break
+        try:
+            if FEN_requested[counter+1] == "b" or FEN_requested[counter+1] == "w":
+                self.current_turn_check = FEN_requested[counter+1] # Setting the starting turn
+        except:
+            pass
+        self.UpdatePieceMoves()
 
 
     def LockSelection(self):
