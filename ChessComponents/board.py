@@ -599,7 +599,6 @@ class GameBoard(tk.Frame):
             pass
         self.UpdatePieceMoves()
 
-
     def LockSelection(self):
         # Activated by the select piece button
         if self.validClick and self.squareChosen == False: # If the click was valid and a square hasn't been chosen
@@ -642,8 +641,7 @@ class GameBoard(tk.Frame):
             if self.boardArrayPieces.loc[self.checkPiece[0][0],self.checkPiece[0][1]].validsquares() == []:
                 # Setting both the king piece checkMate marker and the board check mate marker to true
                 self.boardArrayPieces.loc[self.checkPiece[0][0],self.checkPiece[0][1]].checkMate = True
-                self.checkMate = True
-                print("Game over!")
+                self.Checkmate()
         # Flip the turn
         if self.current_turn_check == "w":
             self.current_turn_disp.set("Black Pieces")
@@ -684,6 +682,12 @@ class GameBoard(tk.Frame):
 
 
         return check
+
+    def Checkmate(self):
+        self.checkMate = True
+        self.wins_message = tk.Label(self,text=self.current_turn_disp.get()[0:5]+" Wins!",font=("TKDefaultFont",86),bg="bisque") # Display winner in big letters
+        self.wins_message.place(x=self.square_virtual_size * 1.5,y=270,height=90)
+
 
     def refresh(self, event):
         '''Redraw the board, possibly in response to window being resized'''
