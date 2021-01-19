@@ -688,34 +688,29 @@ class GameBoard(tk.Frame):
         self.checkMate = True
         self.wins_message = tk.Label(self,text=self.current_turn_disp.get()[0:5]+" Wins!",font=("TKDefaultFont",86),bg="bisque") # Display winner in big letters
         self.wins_message.place(x=self.square_virtual_size * 1.5,y=270,height=90)
-        self.Screenshot()
+        self.Screenshot() # This needs to be placed into a button that appears alongside the winning message
 
     def Screenshot(self):
+        # This is very OTT
         from Quartz import CGWindowListCopyWindowInfo,kCGNullWindowID,kCGWindowListOptionAll
         import matplotlib.pyplot as plt
         from PIL import Image
         import os
         from uuid import uuid4
-
+        import datetime
         gen_filename = lambda:str(uuid4())[-10:]+'.jpg'
-
         def capture_window(window_name):
             window_list = CGWindowListCopyWindowInfo(kCGWindowListOptionAll,kCGNullWindowID)
-            counter = 0
             for window in window_list:
-                counter += 1
                 try:
                     if window_name.lower() in window['kCGWindowName'].lower():
                         filename = gen_filename()
                         os.system('screencapture -l %s %s' % (window['kCGWindowNumber'],filename))
-                        img = Image.open(filename)
-                        img.save("/Users/jamesgower2/Downloads/Image"+str(counter)+".png")
+                        Image.open(filename).save(ChessComponents.__file__[:-27]+"Saved Games/"+datetime.datetime.now().strftime('%H:%M:%S').replace(":","_")+" "+datetime.date.today().strftime("%d-%b-%Y").replace("-","_")+".png")
                         os.remove(filename)
                         break
                 except:
                     pass
-            else:
-                raise Exception('Window %s not found.' % window_name)
         capture_window("Chess Game")
 
     def refresh(self, event):
