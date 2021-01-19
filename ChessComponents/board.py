@@ -433,6 +433,7 @@ class GameBoard(tk.Frame):
 
             self.debug_text.destroy()
             self.debug_set = False # Toggle
+            self.ExcecuteCheckmate()
         else: # Then we display the text box and button
             self.debug_text = tk.Entry(self, font=("TKDefaultFont",8))
             self.debug_text.place(x=self.square_virtual_size * 8+15, y=self.square_virtual_size * 8-15, height=10)
@@ -641,7 +642,7 @@ class GameBoard(tk.Frame):
             if self.boardArrayPieces.loc[self.checkPiece[0][0],self.checkPiece[0][1]].validsquares() == []:
                 # Setting both the king piece checkMate marker and the board check mate marker to true
                 self.boardArrayPieces.loc[self.checkPiece[0][0],self.checkPiece[0][1]].checkMate = True
-                self.Checkmate()
+                self.ExcecuteCheckmate()
         # Flip the turn
         if self.current_turn_check == "w":
             self.current_turn_disp.set("Black Pieces")
@@ -683,11 +684,39 @@ class GameBoard(tk.Frame):
 
         return check
 
-    def Checkmate(self):
+    def ExcecuteCheckmate(self):
         self.checkMate = True
         self.wins_message = tk.Label(self,text=self.current_turn_disp.get()[0:5]+" Wins!",font=("TKDefaultFont",86),bg="bisque") # Display winner in big letters
         self.wins_message.place(x=self.square_virtual_size * 1.5,y=270,height=90)
+        self.Screenshot()
 
+    def Screenshot(self):
+        from Quartz import CGWindowListCopyWindowInfo,kCGNullWindowID,kCGWindowListOptionAll
+        import matplotlib.pyplot as plt
+        from PIL import Image
+        import os
+        from uuid import uuid4
+
+        gen_filename = lambda:str(uuid4())[-10:]+'.jpg'
+
+        def capture_window(window_name):
+            window_list = CGWindowListCopyWindowInfo(kCGWindowListOptionAll,kCGNullWindowID)
+            counter = 0
+            for window in window_list:
+                counter += 1
+                try:
+                    if window_name.lower() in window['kCGWindowName'].lower():
+                        filename = gen_filename()
+                        os.system('screencapture -l %s %s' % (window['kCGWindowNumber'],filename))
+                        img = Image.open(filename)
+                        img.save("/Users/jamesgower2/Downloads/Image"+str(counter)+".png")
+                        os.remove(filename)
+                        break
+                except:
+                    pass
+            else:
+                raise Exception('Window %s not found.' % window_name)
+        capture_window("Chess Game")
 
     def refresh(self, event):
         '''Redraw the board, possibly in response to window being resized'''
