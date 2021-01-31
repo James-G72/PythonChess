@@ -53,7 +53,7 @@ class King():
                     squares_array.append(str(row)+str(col))
         return squares_array
 
-    def checkCheck(self,boardarray,row,col):
+    def checkCheck(self,boardarray,roxxw,col):
         # This is unique to the king class and checks if this specific piece is in check
         # Once check has been established checkmate is easy to check for the king but the use of other pieces must be checked at the board level
         # All the pieces are checked to see if the king is a valid square for them. If it is then the king is in check.
