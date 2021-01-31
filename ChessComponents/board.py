@@ -212,6 +212,11 @@ class GameBoard(tk.Frame):
         self.canvas.bind("<Configure>", self.refresh) # This shouldn't happen as the size has been locked
 
     def GetCoords(self, event):
+        '''
+        This function listens for a click and passes the coordinates of any clicks into SelectSquare.
+        :param event: A click
+        :return: None
+        '''
         global x0,y0
         x0 = event.x # Event is a click
         y0 = event.y
@@ -220,6 +225,12 @@ class GameBoard(tk.Frame):
             self.SelectSquare(x0,y0) # This information is passed into the SelectSquare method
 
     def SelectSquare(self, xcoords, ycoords):
+        '''
+        Calculates a square from the x and y coordinates
+        :param xcoords: x possition of click
+        :param ycoords: y possition of click
+        :return: None
+        '''
         valid = False # Allows the alternating turns of the two players to be observed
         offset = self.square_virtual_size  # This is the number required to make it work......
         col = math.floor(xcoords / offset) # Finding the square the player means
@@ -282,6 +293,14 @@ class GameBoard(tk.Frame):
                     self.movebutton.config(state="normal") # Unlocking the move button
 
     def HighlightSquare(self,row,col,colour,tag):
+        '''
+        Adds visuals to the board to show which square has been selected
+        :param row: Row on board
+        :param col: Column on board
+        :param colour: Colour for the square to be placed around the square
+        :param tag: When lines are created they are assigned to this label
+        :return: None
+        '''
         # Recieves a square to put a box around
         offset = self.square_virtual_size # Finding the sze of a square
         if colour == "green": # If the colour requested is green we use a lighter colour
@@ -292,6 +311,13 @@ class GameBoard(tk.Frame):
         self.canvas.create_line(col * offset+offset,row * offset+offset,col * offset,row * offset+offset,fill=colour,width=3,tag=tag)
 
     def VisualiseMoves(self,row,col,piece_code):
+        '''
+        Adds visuals for the possible squares to which the selected piece can move
+        :param row:
+        :param col:
+        :param piece_code:
+        :return: None
+        '''
         self.canvas.delete("example") # Removes all previously highlighted possible moves
         offset = self.square_virtual_size
         target_squares = self.PossibleMoves(row,col) # Requesting possible moves for the piece in that sqaure
@@ -299,30 +325,58 @@ class GameBoard(tk.Frame):
             self.HighlightSquare(int(plotter[0]),int(plotter[1]),"orange","example") # Adding an orange box around them
 
     def PossibleMoves(self,row,col):
+        '''
+        Requests the valid squares that the piece in the defined square can move to
+        :param row: Row of target piece
+        :param col: Column of target piece
+        :return: List of valid move squares
+        '''
         # This just puts a request in to the specific piece in that square
         squares = self.boardArrayPieces.loc[row,col].validsquares()
         return squares
 
     def AddPiece(self, name, image, row, column):
+        '''
+        Adds a picture of the piece to the board at 0 0 before calling PlacePiece to allign it to the row/column
+        :param name: Piece name such as r3 or K1
+        :param image: An image from the imageholder dictionary
+        :param row: Target row on the board
+        :param column: Target column on the board
+        :return: None
+        '''
         # We can add a piece to the board at the requested location
         self.canvas.create_image(0,0, image=image, tags=(name, "piece"), anchor="c") # First we create the image in the top left
         self.PlacePiece(name, row, column) # Then we move it to the specified location
 
     def RemovePiece(self, name):
+        '''
+        Deletes the piece image with the specified name from the board and the piece list
+        :param name: r3 or K1
+        :return: None
+        '''
         # This is only used when a piece is taken
         # This change is purely aesthetic
         self.canvas.delete(name) # Removes it based on a piece_id from a chesspiece object
         del self.pieces[name] # We also remove it from the pieces list
 
     def PlacePiece(self, name, row, col):
-        '''Place a piece at the given row/column'''
+        '''
+        Places a piece that already exists to the specified row and colummn location
+        :param name: r3 or K1 name for the piece
+        :param row: Row on the board
+        :param col: Column on the board
+        :return: None
+        '''
         self.pieces[name] = (row,col) # Saves where it was placed
         x0 = (col * self.size) + int(self.size/2) # Works out where it should be in pixels
         y0 = (row * self.size) + int(self.size/2)
         self.canvas.coords(name, x0, y0) # Sets it to that location
 
     def Defaults(self):
-        '''Sets the board up for a fresh game'''
+        '''
+        Cleard and sets the board up for a fresh game and resets the control panel
+        :return: None
+        '''
         self.start_button.config(state="normal")
 
         # We assume that the board is populated and so try to remove pieces from each square
@@ -435,6 +489,10 @@ class GameBoard(tk.Frame):
         self.initiated = False # Essentially saying that the game is no longer active
 
     def Debug(self): # Has 2 modes depending on the polarity of set
+        '''
+        Allows the board to be set based on a FEN input to a text box
+        :return: None
+        '''
         if self.debug_set == True: # Then we excecute the contents of the text box
             FEN_requested = self.debug_text.get()
             if FEN_requested != "": # This means nothing has been entered into the field.
@@ -450,6 +508,10 @@ class GameBoard(tk.Frame):
             self.debug_set = True # Toggle
 
     def Initiate(self):
+        '''
+        This command is run from the start button of the control pannel and starts the game
+        :return: None
+        '''
         # This function starts the game upon request
         self.initiated = True # Indicates that the game has started
         self.start_button.config(state="disabled") # Make it so the start button can't be pressed again
@@ -485,6 +547,10 @@ class GameBoard(tk.Frame):
         self.CalculateTurn()
 
     def CalculateTurn(self):
+        '''
+        Run everytime a piece is moved visually this updates the state of all pieces on the board for valid moves and turns taken
+        :return: None
+        '''
         if self.playerHolder[self.holderEnum] != 0: # Then the turn is automatic
             if self.playerHolder[self.holderEnum].getid() == "Stockfish":
                 # We also want to tell the stockfish engine what the latest move is
@@ -502,6 +568,16 @@ class GameBoard(tk.Frame):
             self.LockSelection()
 
     def FENConvert(self,direction,target=None):
+        '''
+        Used to convert FEN board notation to the unique notation used for this game.
+        Conversions:
+            * Converting an FEN move to one readable by the board
+            * Converting a player move to one readable by stockfish
+            * Generating a full FEN string based on the current state of the board
+        :param direction: In the same order as the fuctions listed above: "SAN2Board", "Board2SAN", "FullFEN"
+        :param target: Holds the row/column of the selected square and the one the piece is being moved to
+        :return: In the same order as the fuctions listed above: Board move notation, SAN move notation, Full FEN string
+        '''
         # This method converts the current board position to FEN or a stockfish move to a move in the notation used for this board
         # In SAN the position "a1" is located at the bottom left of the board in the white corner
         # For the row/col notation used here a1 corresponds to row = 7, col = 0. h8 -> row = 0, col = 7
@@ -552,6 +628,11 @@ class GameBoard(tk.Frame):
             return FEN
 
     def SetBoardfromFEN(self,FEN_requested):
+        '''
+        Run from the Debug button this sets the state of the game as per a FEN string
+        :param FEN_requested: FEN string dexfribing the board with or without En Passent/ castling info
+        :return: None
+        '''
         # This is a reasonably rare task so we will encorperate it all into one function
         # Due to the board needing for objects to be created individually e.g. r1 for a rook we need all pieces to be present and then we can move them
         self.Defaults() # Full reset
@@ -611,6 +692,10 @@ class GameBoard(tk.Frame):
         self.UpdatePieceMoves()
 
     def LockSelection(self):
+        '''
+        Holds the code that detemines if a click was a valid selection of a moveable square. Sets visuals accordingly
+        :return: None
+        '''
         # Activated by the select piece button
         if self.validClick and self.squareChosen == False: # If the click was valid and a square hasn't been chosen
             self.squareChosen = True # Indicate a square is chosen
@@ -632,6 +717,10 @@ class GameBoard(tk.Frame):
             return
 
     def MovePiece(self):
+        '''
+        Runs most of the code to action a turn. Moves all visuals and internal variables as well as calculating new valid moves based on the move made.
+        :return: None
+        '''
         # First we check if their is a piece that needs to be removed
         if self.boardArrayPieces.loc[self.moveSquare[0],self.moveSquare[1]] != 0: # Is the square full
             self.RemovePiece(self.boardArrayPieces.loc[self.moveSquare[0],self.moveSquare[1]].getid()) # If so remove it
@@ -669,6 +758,10 @@ class GameBoard(tk.Frame):
         self.CalculateTurn()
 
     def UpdatePieceMoves(self):
+        '''
+        Calls all pieces individually and updates their moves internally. The kings are also checked to see if either is in check
+        :return: If return is true then one of the pieces is in check. The game can infer which king this is from which player just took their turn
+        '''
         # Later on it would be good to add some optimisation here but for now it is enough to cycle though
         check_temp = False
         check = False
@@ -676,7 +769,7 @@ class GameBoard(tk.Frame):
         self.checkMate = False
         for row in range(0,8): # Through all rows
             for col in range(0,8): # And all columns
-                if self.boardArrayPieces.loc[row,col] != 0: # If the space is blank we ship it
+                if self.boardArrayPieces.loc[row,col] != 0: # If the space is blank we skip it
                     # Otherwise we call the update function in each of the pieces
                     self.boardArrayPieces.loc[row,col].updatemoves(row,col,self.boardArrayPieces,self.colourArray)
         # A quirk of doing it this way is that the piece moves need to be updated for checkCheck to work.
@@ -695,12 +788,20 @@ class GameBoard(tk.Frame):
         return check
 
     def ExcecuteCheckmate(self):
+        '''
+        This is an end of game function that performs visuals
+        :return:
+        '''
         self.checkMate = True
         self.wins_message = tk.Label(self,text=self.current_turn_disp.get()[0:5]+" Wins!",font=("TKDefaultFont",86),bg="bisque") # Display winner in big letters
         self.wins_message.place(x=self.square_virtual_size * 1.5,y=270,height=90)
         self.Screenshot() # This needs to be placed into a button that appears alongside the winning message
 
     def Screenshot(self):
+        '''
+        Takes a screenshot of the board and saves it with a time and date stamp
+        :return:
+        '''
         # This is very OTT
         from Quartz import CGWindowListCopyWindowInfo,kCGNullWindowID,kCGWindowListOptionAll
         import matplotlib.pyplot as plt
@@ -724,7 +825,11 @@ class GameBoard(tk.Frame):
         capture_window("Chess Game")
 
     def refresh(self, event):
-        '''Redraw the board, possibly in response to window being resized'''
+        '''
+        The size of the window is now locked and as a result I don't think this is ever called. In theory it updates all visuals should the window be resized.
+        :param event: A click
+        :return: None
+        '''
         xsize = int((event.width-1) / self.columns)
         ysize = int((event.height-1) / self.rows)
         self.size = min(xsize, ysize)
