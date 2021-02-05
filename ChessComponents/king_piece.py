@@ -2,6 +2,15 @@ import pandas as pd
 import numpy as np
 
 class King():
+    """
+    The King class contains:
+        getid()\n
+        getcolour()\n
+        iterate()\n
+        updatemoves(row,col,boardarray,colourarray)\n
+        validsquares()\n
+        checkCheck(self,boardarray,row,col)\n
+    """
     def __init__(self,piece_id,row,col):
         # Initialising the piece
         self.turns = 0
@@ -17,16 +26,35 @@ class King():
         self.moves = pd.DataFrame(np.zeros((8,8)),index=[0,1,2,3,4,5,6,7],columns=[0,1,2,3,4,5,6,7])
 
     def getid(self):
-        # Returns the id that corresponds to the correct image
+        """
+        Returns the piece ID that was assigned on creation
+        :return: Piece ID
+        """
         return self.type+self.id
 
     def getcolour(self):
+        """
+        Returns the colour of the piece
+        :return: Either "w" or "b"
+        """
         return self.colour
 
     def iterate(self):
+        """
+        Logs the number of times that the piece has been moved
+        :return: None
+        """
         self.turns += 1
 
     def updatemoves(self,row,col,boardarray,colourarray):
+        """
+        The valid moves that the piece can make are stored internally. This function internally updates this tracker.
+        :param row: The row in which the piece is located
+        :param col: The column in which the piece is located
+        :param boardarray: A dataframe that contains all of the pieces for reference
+        :param colourarray: A simplified version of board array that shows what colour, if any, occupies each square
+        :return: None
+        """
         # The king is possibly the simplest piece to move
         # Castling hasn't been implemented yet
         self.moves = pd.DataFrame(np.zeros((8,8)),index=[0,1,2,3,4,5,6,7],columns=[0,1,2,3,4,5,6,7])
@@ -45,7 +73,10 @@ class King():
                         self.moves.loc[row+row_dif,col+col_dif] = 1
 
     def validsquares(self):
-        # This method packs the current valid moves into a simple
+        """
+        Places all valid moves into a list to be visualised.
+        :return: List of all valid squares [[row1,col1],[row2,col2]]
+        """
         squares_array = []
         for row in self.moves.index:
             for col in self.moves.columns:
@@ -53,7 +84,7 @@ class King():
                     squares_array.append(str(row)+str(col))
         return squares_array
 
-    def checkCheck(self,boardarray,roxxw,col):
+    def checkCheck(self,boardarray,row,col):
         # This is unique to the king class and checks if this specific piece is in check
         # Once check has been established checkmate is easy to check for the king but the use of other pieces must be checked at the board level
         # All the pieces are checked to see if the king is a valid square for them. If it is then the king is in check.
