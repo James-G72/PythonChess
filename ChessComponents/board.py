@@ -6,6 +6,9 @@ import ChessComponents
 import math
 
 class GameBoard(tk.Frame):
+    """
+    The main host that is called to start the game
+    """
     def __init__(self, parent, side_size, square_size=80, rows=8, columns=8, color1="#ffffff", color2="#474747"):
         '''
         The GameBoard object hosts the whole game. Upon iitialisation the chess board is created and pieces drawn.
