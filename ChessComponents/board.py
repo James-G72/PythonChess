@@ -630,12 +630,6 @@ class GameBoard(tk.Frame):
             FEN += " 0 "+str(self.fullMove)
             return FEN
 
-    def VisualsfromBoard(self):
-        """
-        Designed to refresh all visuals based on boardarraypieces
-        :return: None
-        """
-
     def SetBoardfromFEN(self,FEN_requested):
         '''
         Run from the Debug button this sets the state of the game as per a FEN string
@@ -647,8 +641,8 @@ class GameBoard(tk.Frame):
         board_store = self.boardArrayPieces
         # This is a reasonably rare task so we will encorperate it all into one function
         # Due to the board needing for objects to be created individually e.g. r1 for a rook we need all pieces to be present and then we can move them
-        self.Defaults() # Full reset
-        storage = pd.DataFrame(np.zeros((2,16))) # Temporarily hold all the pieces
+        self.Defaults()  # Full reset
+        storage = pd.DataFrame(np.zeros((2,16)))  # Temporarily hold all the pieces
         self.colourArray = pd.DataFrame(np.zeros((8,8)),index=[0,1,2,3,4,5,6,7],columns=[0,1,2,3,4,5,6,7])
         counter = 0
         for row in [0,1,6,7]:
@@ -689,7 +683,6 @@ class GameBoard(tk.Frame):
                             if storage.loc[row_stor,col_stor] != 0:
                                 if storage.loc[row_stor,col_stor].getid()[0] == piece:
                                     self.boardArrayPieces.loc[row,col] = storage.loc[row_stor,col_stor]
-                                    self.AddPiece(storage.loc[row_stor,col_stor].getid(),self.imageHolder[storage.loc[row_stor,col_stor].getid()[0]],row,col)
                                     storage.loc[row_stor,col_stor] = 0
                                     if row_stor == 1: # Then it's a white piece
                                         self.colourArray.loc[row,col] = "w"
@@ -701,7 +694,18 @@ class GameBoard(tk.Frame):
                 self.current_turn_check = FEN_requested[counter+1] # Setting the starting turn
         except:
             pass
+        self.VisualsfromBoard()
         self.UpdatePieceMoves()
+
+    def VisualsfromBoard(self):
+        """
+        Draw all pieces afresh based on boardarraypieces
+        :return: None
+        """
+        for row in range(0,8):
+            for col in range(0,8):
+                if self.boardArrayPieces.loc[row,col] != 0:
+                    self.AddPiece(self.boardArrayPieces.loc[row,col].getid(),self.imageHolder[self.boardArrayPieces.loc[row,col].getid()[0]],row,col)
 
     def LockSelection(self):
         '''
