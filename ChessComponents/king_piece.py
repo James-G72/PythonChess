@@ -85,7 +85,13 @@ class King():
         return squares_array
 
     def checkCheck(self,boardarray,row,col):
-        # This is unique to the king class and checks if this specific piece is in check
+        """
+        This is unique to the king class and checks if this specific piece is in check
+        :param boardarray: A dataframe that contains all of the pieces for reference
+        :param row: row the piece is in
+        :param col: Column the piece is in
+        :return: A boolean check - True means the piece is in check. An array that contains all squares that are attacking the piece
+        """
         # Once check has been established checkmate is easy to check for the king but the use of other pieces must be checked at the board level
         # All the pieces are checked to see if the king is a valid square for them. If it is then the king is in check.
         # This means that the same logic can be used to see if squares are invalid due to putting the king in check as it takes the boardarray and a row+column
