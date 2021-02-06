@@ -149,14 +149,26 @@ class GameBoard(tk.Frame):
         self.player1_label.place(x=self.square_virtual_size*8 + 15, y=self.playmode_height+45, height=16)
         self.player2_label = tk.Label(self,text="Black:",bg="bisque")
         self.player2_label.place(x=self.square_virtual_size*8 + 15, y=self.playmode_height+65, height=16)
+        # This is a very complex line that uses a stockfish wrapper to allow stockfish to play the game
+        stockfish_possible = True
+        try:
+            stockfish = ChessComponents.Stockfish("/Users/jamesgower2/Documents/Stockfish-master/src/stockfish")
+            stockfish.set_fen_position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+        except:
+            stockfish_possible = False
         self.playmode1 = tk.StringVar()
         self.playmode1.set("Person")
         self.playmode2 = tk.StringVar()
-        self.playmode2.set("Computer")
-        self.player1 = tk.OptionMenu(self,self.playmode1,"Person","Computer","Random")
+        if stockfish_possible:
+            self.playmode2.set("Computer")
+            self.player1 = tk.OptionMenu(self,self.playmode1,"Person","Computer","Random")
+            self.player2 = tk.OptionMenu(self,self.playmode2,"Person","Computer","Random")
+        else:
+            self.playmode2.set("Person")
+            self.player1 = tk.OptionMenu(self,self.playmode1,"Person","Random")
+            self.player2 = tk.OptionMenu(self,self.playmode2,"Person","Random")
         self.player1.place(x=self.square_virtual_size*8 + 80, y=self.playmode_height+45, height=16)
         self.player1.config(background="bisque") # For optionmenu the bg abbreviation means in the dropdown
-        self.player2 = tk.OptionMenu(self,self.playmode2,"Person","Computer","Random")
         self.player2.place(x=self.square_virtual_size * 8+80,y=self.playmode_height+65,height=16)
         self.player2.config(background="bisque") # For optionmenu the bg abbreviation means in the dropdown
 
@@ -532,9 +544,6 @@ class GameBoard(tk.Frame):
             self.current_turn_text.config(fg="white",bg="black")
         # This line allows the opportunity to let a computer take a turn if there is a computer playing
         autoPlayer = ChessComponents.Comp1()
-        # This is a very complex line that uses a stockfish wrapper to allow stockfish to play the game
-        stockfish = ChessComponents.Stockfish("/Users/jamesgower2/Documents/Stockfish-master/src/stockfish")
-        stockfish.set_fen_position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
         if self.playmode1.get() == "Computer":
             self.playerHolder[0] = stockfish
         elif self.playmode1.get() == "Random":
