@@ -630,12 +630,21 @@ class GameBoard(tk.Frame):
             FEN += " 0 "+str(self.fullMove)
             return FEN
 
+    def VisualsfromBoard(self):
+        """
+        Designed to refresh all visuals based on boardarraypieces
+        :return: None
+        """
+
     def SetBoardfromFEN(self,FEN_requested):
         '''
         Run from the Debug button this sets the state of the game as per a FEN string
         :param FEN_requested: FEN string dexfribing the board with or without En Passent/ castling info
         :return: None
         '''
+        # Changes are made to the board live so if this function fails on the final piece the game will need to be restarted.
+        # To avoid this we copy all elements that are changed.
+        board_store = self.boardArrayPieces
         # This is a reasonably rare task so we will encorperate it all into one function
         # Due to the board needing for objects to be created individually e.g. r1 for a rook we need all pieces to be present and then we can move them
         self.Defaults() # Full reset
