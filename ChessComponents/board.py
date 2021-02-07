@@ -152,8 +152,8 @@ class GameBoard(tk.Frame):
         # This is a very complex line that uses a stockfish wrapper to allow stockfish to play the game
         stockfish_possible = True
         try:
-            stockfish = ChessComponents.Stockfish("/Users/jamesgower2/Documents/Stockfish-master/src/stockfish")
-            stockfish.set_fen_position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+            self.stockfish = ChessComponents.Stockfish("/Users/jamesgower2/Documents/Stockfish-master/src/stockfish")
+            self.stockfish.set_fen_position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
         except:
             stockfish_possible = False
         self.playmode1 = tk.StringVar()
@@ -545,13 +545,13 @@ class GameBoard(tk.Frame):
         # This line allows the opportunity to let a computer take a turn if there is a computer playing
         autoPlayer = ChessComponents.Comp1()
         if self.playmode1.get() == "Computer":
-            self.playerHolder[0] = stockfish
+            self.playerHolder[0] = self.stockfish
         elif self.playmode1.get() == "Random":
             autoPlayer.colour_ref = "White Pieces"
             autoPlayer.colour = "w"
             self.playerHolder[0] = autoPlayer
         if self.playmode2.get() == "Computer":
-            self.playerHolder[1] = stockfish
+            self.playerHolder[1] = self.stockfish
         elif self.playmode2.get() == "Random":
             autoPlayer.colour_ref = "Black Pieces"
             autoPlayer.colour = "b"
