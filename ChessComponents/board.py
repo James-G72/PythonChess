@@ -57,6 +57,11 @@ class GameBoard(tk.Frame):
         self.validClick = False # This allows the board to know if a valid square to move to has been selected or not. This is stored on this level as it effects labels
         self.moveSquare = [] # This is the square that the player wants to move to
         self.fullMove = 1 # Tracks how many moves there have been
+        self.dragging = False # Allows a picture dragging to be iitiated
+        self.drag_from_row = 0 # Allows the initial drag row to be tracked
+        self.drag_from_col = 0 # Same for columns
+        self.drag_image = None
+        self.valid_drag = False # States if a square has a piece in
 
         # Adding all of the pictures from Images folder
         self.imageHolder = {} # Creating a dictionary
@@ -180,39 +185,25 @@ class GameBoard(tk.Frame):
 
         # Adding controls section to allow the game to be played
         self.controls_height = 225
-        self.canvas.create_rectangle(self.square_virtual_size*8 + 4,self.controls_height,self.square_virtual_size*8 + 10+192,self.controls_height+160,width=2)
         self.controls_heading = tk.Label(self,text="Controls:",font=("TKDefaultFont",18),bg="bisque")
-        self.controls_heading.place(x=self.square_virtual_size*8 + 70, y=self.controls_height+15, height=16)
         self.selectbuttonstring = tk.StringVar()
         self.selectbuttonstring.set("Select Piece")
         self.select_button = tk.Button(self,textvariable=self.selectbuttonstring,fg="black",background="black",font=("TKDefaultFont",12), command=self.LockSelection)
-        self.select_button.place(x=self.square_virtual_size * 8+20,y=self.controls_height+45,height=20)
         self.square_text_displaypiece_bybutton = tk.StringVar()
         self.square_text_displaypiece_bybutton.set("None")
         self.selected_displaypiece_bybutton = tk.Label(self,textvariable=self.square_text_displaypiece_bybutton,bg="bisque")
-        self.selected_displaypiece_bybutton.place(x=self.square_virtual_size * 8+118,y=self.controls_height+45,height=16)
-        self.canvas.create_rectangle(self.square_virtual_size * 8+16,self.controls_height+58,self.square_virtual_size * 8+10+180,self.controls_height+128,width=1)
         self.summary_heading = tk.Label(self,text="Summary:",font=("TKDefaultFont",10),bg="bisque")
-        self.summary_heading.place(x=self.square_virtual_size*8 + 80, y=self.controls_height+70, height=16)
         self.summarylabel1 = tk.Label(self,text="Move:",font=("TKDefaultFont",10),bg="bisque")
-        self.summarylabel1.place(x=self.square_virtual_size * 8+50,y=self.controls_height+84,height=16)
         self.summarylabel1_piece = tk.Label(self,textvariable=self.square_text_displaypiece_bybutton,font=("TKDefaultFont",10),bg="bisque")
-        self.summarylabel1_piece.place(x=self.square_virtual_size * 8+120,y=self.controls_height+84,height=16)
         self.summarylabel2 = tk.Label(self,text="From:",font=("TKDefaultFont",10),bg="bisque")
-        self.summarylabel2.place(x=self.square_virtual_size * 8+50,y=self.controls_height+98,height=16)
         self.oldsquare = tk.StringVar()
         self.oldsquare.set("[ , ]")
         self.summarylabel2_piece = tk.Label(self,textvariable=self.oldsquare,font=("TKDefaultFont",10),bg="bisque")
-        self.summarylabel2_piece.place(x=self.square_virtual_size * 8+120,y=self.controls_height+98,height=16)
-        self.summarylabel3 = tk.Label(self,text="To:",font=("TKDefaultFont",10),bg="bisque")
-        self.summarylabel3.place(x=self.square_virtual_size * 8+50,y=self.controls_height+112,height=16)
         self.newsquare = tk.StringVar()
         self.newsquare.set("[ , ]")
         self.summarylabel3_piece = tk.Label(self,textvariable=self.newsquare,font=("TKDefaultFont",10),bg="bisque")
-        self.summarylabel3_piece.place(x=self.square_virtual_size * 8+120,y=self.controls_height+112,height=16)
 
         self.movebutton = tk.Button(self,text="Move Piece",fg="black",background="black",font=("TKDefaultFont",22), command=self.MovePiece)
-        self.movebutton.place(x=self.square_virtual_size * 8+50,y=self.controls_height+144,height=20)
         self.movebutton.config(state="disabled")
 
         # Current turn indicator
@@ -223,8 +214,49 @@ class GameBoard(tk.Frame):
 
         # Binding configuration and left mouse click
         self.canvas.bind("<Button 1>",self.GetCoords) # This allows the clicking to be tracked
+        self.canvas.bind("<B1-Motion>", self.Drag) # This allows dragging to be tracked
+        self.canvas.bind("<ButtonRelease-1>",self.EndDrag)  # This allows the clicking to be tracked
         # If a the user changes the window size then the refresh call is made. This is defined below
         self.canvas.bind("<Configure>", self.refresh) # This shouldn't happen as the size has been locked
+
+
+    def Drag(self, event):
+        '''
+        This function handles the dragging of pieces to take turns visually
+        :param event: An ongoing event that gives co-ordiates
+        :return: None
+        '''
+        global xd,yd
+        xd = event.x  # Event is a click
+        yd = event.y
+        if self.initiated: # If the game is started....
+            # Copying the logic from the top of SelectSquare
+            valid = False  # Allows the alternating turns of the two players to be observed
+            offset = self.square_virtual_size  # This is the number required to make it work......
+            if not self.dragging:
+                if self.drag_from_col <= 7 and self.drag_from_row <= 7:  # Have we clicked within the bounds of the board
+                    if self.current_turn_check == "w" and self.colourArray.loc[self.drag_from_row,self.drag_from_col] == "w":  # Checking if it is the right colour
+                        valid = True  # Allowing access to additional code
+                    elif self.current_turn_check == "b" and self.colourArray.loc[self.drag_from_row,self.drag_from_col] == "b":
+                        valid = True
+                    if valid:
+                        self.drag_image = self.imageHolder[self.boardArrayPieces.loc[self.drag_from_row,self.drag_from_col].getid()[0]]
+                        self.canvas.coords(self.boardArrayPieces.loc[self.drag_from_row,self.drag_from_col].getid(),xd,yd)  # Sets it to that location
+                        self.dragging = True
+            else:
+                self.canvas.coords(self.boardArrayPieces.loc[self.drag_from_row,self.drag_from_col].getid(),xd,yd)  # Sets it to that location
+                self.valid_drag = True
+
+    def EndDrag(self, event):
+        '''
+        This function handles the ending of drag events after button release and moves a piece if required
+        :param event: An ongoing event that gives co-ordiates
+        :return: None
+        '''
+        self.dragging = False # Ends dragging event
+        if self.valid_drag:
+            self.PlacePiece(self.boardArrayPieces.loc[self.drag_from_row,self.drag_from_col].getid(),self.drag_from_row,self.drag_from_col) # Returns piece to start
+            self.valid_drag = False
 
     def GetCoords(self, event):
         '''
@@ -232,6 +264,7 @@ class GameBoard(tk.Frame):
         :param event: A click
         :return: None
         '''
+        print("Click")
         global x0,y0
         x0 = event.x # Event is a click
         y0 = event.y
@@ -250,6 +283,8 @@ class GameBoard(tk.Frame):
         offset = self.square_virtual_size  # This is the number required to make it work......
         col = math.floor(xcoords / offset) # Finding the square the player means
         row = math.floor(ycoords / offset)
+        self.drag_from_col = col # Setting the drag variables
+        self.drag_from_row = row
         if self.squareChosen == False: # If we haven't chosen one yet then choose one
             if col <= 7 and row <= 7: # Have we clicked within the bounds of the board
                 if self.current_turn_check == "w" and self.colourArray.loc[row,col] != "b": # Checking if it is the right colour
