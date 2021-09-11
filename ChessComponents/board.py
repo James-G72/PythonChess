@@ -53,7 +53,6 @@ class GameBoard(tk.Frame):
         self.current_turn_check = "w" # This regulates which pieces can be moved. White goes first
 
         self.desiredSquare = [] # This is the square that the player wants to move and is locked using the select piece button
-        self.squareChosen = False # This is triggered when a square is chosen
         self.validClick = False # This allows the board to know if a valid square to move to has been selected or not. This is stored on this level as it effects labels
         self.moveSquare = [] # This is the square that the player wants to move to
         self.fullMove = 1 # Tracks how many moves there have been
@@ -128,7 +127,7 @@ class GameBoard(tk.Frame):
         self.debug_button = tk.Button(self,text="Debug", fg="blue", font=("TKDefaultFont",8), command=self.Debug)
         self.debug_button.place(x=self.square_virtual_size*8 + self.side_size-24, y=self.square_virtual_size*8, height=10)
 
-        # Adding a square/piece selected tracker
+        # Adding a square/piece selected tracker (none of this is displayed)
         self.canvas.create_rectangle(self.square_virtual_size*8 + 4,2,self.square_virtual_size*8 + 10+192,90,width=2) # Just a hollow rectangle to denote an area
         self.selection_heading = tk.Label(self,text="Current Selection:",font=("TKDefaultFont",18),bg="bisque") # Heading
         self.selection_heading.place(x=self.square_virtual_size*8 + 30, y=18, height=16)
@@ -188,7 +187,6 @@ class GameBoard(tk.Frame):
         self.controls_heading = tk.Label(self,text="Controls:",font=("TKDefaultFont",18),bg="bisque")
         self.selectbuttonstring = tk.StringVar()
         self.selectbuttonstring.set("Select Piece")
-        self.select_button = tk.Button(self,textvariable=self.selectbuttonstring,fg="black",background="black",font=("TKDefaultFont",12), command=self.LockSelection)
         self.square_text_displaypiece_bybutton = tk.StringVar()
         self.square_text_displaypiece_bybutton.set("None")
         self.selected_displaypiece_bybutton = tk.Label(self,textvariable=self.square_text_displaypiece_bybutton,bg="bisque")
@@ -253,10 +251,26 @@ class GameBoard(tk.Frame):
         :param event: An ongoing event that gives co-ordiates
         :return: None
         '''
+        xd = event.x  # Event is a click
+        yd = event.y
+        offset = self.square_virtual_size  # This is the number required to make it work......
+        col = math.floor(xd / offset) # Finding the square the player means
+        row = math.floor(yd / offset)
         self.dragging = False # Ends dragging event
         if self.valid_drag:
-            self.PlacePiece(self.boardArrayPieces.loc[self.drag_from_row,self.drag_from_col].getid(),self.drag_from_row,self.drag_from_col) # Returns piece to start
-            self.valid_drag = False
+            valid = False
+            target_squares = self.PossibleMoves(self.drag_from_row,self.drag_from_col)
+            for square in target_squares:
+                if row == int(square[0]) and col == int(square[1]): # Do current rows and columns match a valid square
+                    valid = True
+            if valid: # Then we want to perform a move
+                # We first need to set all of the .self parameters that are used by MovePiece
+                self.moveSquare = [row,col]
+                self.MovePiece()
+                self.valid_drag = False
+            else:
+                self.PlacePiece(self.boardArrayPieces.loc[self.drag_from_row,self.drag_from_col].getid(),self.drag_from_row,self.drag_from_col) # Returns piece to start
+
 
     def GetCoords(self, event):
         '''
@@ -285,62 +299,61 @@ class GameBoard(tk.Frame):
         row = math.floor(ycoords / offset)
         self.drag_from_col = col # Setting the drag variables
         self.drag_from_row = row
-        if self.squareChosen == False: # If we haven't chosen one yet then choose one
-            if col <= 7 and row <= 7: # Have we clicked within the bounds of the board
-                if self.current_turn_check == "w" and self.colourArray.loc[row,col] != "b": # Checking if it is the right colour
-                    valid = True # Allowing access to additional code
-                elif self.current_turn_check == "b" and self.colourArray.loc[row,col] != "w":
-                    valid = True
-                if valid:
-                    self.canvas.delete("move") # Clearing all types of highlighting currently o the board
-                    self.canvas.delete("highlight")
-                    self.canvas.delete("example")
-                    self.HighlightSquare(row,col,"blue",'highlight') # Adding a blue edge around the square
-                    self.square_text_x.set("Selected Square (x) = "+str(col+1)) # Indicating the selected square
-                    self.square_text_y.set("Selected Square (y) = "+str(row+1))
-                    # Then checking for what piece that is
-                    found_key = []
-                    if self.boardArrayPieces.loc[row,col] != 0:
-                        found_key = self.boardArrayPieces.loc[row,col].getid()
-                    if found_key == []:
-                        occupier = "None"
-                        self.validClick = False
-                    else:
-                        occupier = self.pieceDescription[found_key[0]]
-                        self.validClick = True
-                    self.desiredSquare = [row,col] # Saving this information in the desiredSquare variable
-                    self.square_text_displaypiece.set("Selected Piece = "+occupier)
-                    self.square_text_displaypiece_bybutton.set(occupier)
-
-                    if self.initiated and found_key != []: # If a game has been started
-                        self.VisualiseMoves(row,col,found_key) # Asking all possible moves to be displayed by calling this method
-                else: # Otherwise if the click wasn't valid
-                    self.canvas.delete("highlight") # Clear highlighting
-                    self.canvas.delete("example")
-                    self.HighlightSquare(row,col,"red",'highlight') # Display a red edge
-
-            else: # Otherwise we have clicked outside the board so we reset
-                self.canvas.delete("move")  # Clearing all types of highlighting currently o the board
+        if col <= 7 and row <= 7: # Have we clicked within the bounds of the board
+            if self.current_turn_check == "w" and self.colourArray.loc[row,col] != "b": # Checking if it is the right colour
+                valid = True # Allowing access to additional code
+            elif self.current_turn_check == "b" and self.colourArray.loc[row,col] != "w":
+                valid = True
+            if valid:
+                self.canvas.delete("move") # Clearing all types of highlighting currently o the board
                 self.canvas.delete("highlight")
                 self.canvas.delete("example")
-                self.square_text_x.set("Selected Square (x) = None")
-                self.square_text_y.set("Selected Square (y) = None")
-                self.square_text_displaypiece.set("Selected Piece = None")
-        else:
-            # If the square has been locked
-            offset = self.square_virtual_size # This is the number required to make it work......
-            col = math.floor(xcoords/offset)
-            row = math.floor(ycoords/offset)
-            target_squares = self.PossibleMoves(self.desiredSquare[0],self.desiredSquare[1]) # Requesting the possible moves
-            for plotter in target_squares: # Cycling through them all
-                if plotter[0] == str(row) and plotter[1] == str(col): # Checking if the clicked square is one of them
-                    self.canvas.delete("move") # Deleting previous highlights
-                    self.HighlightSquare(row,col,"green",'move') # Adding a new one in this square
-                    self.moveSquare = [row,col] # Setting the move square to the one clicked
-                    self.summarylabel3.place(x=self.square_virtual_size * 8+50,y=self.controls_height+112,height=16) # Updating labels
-                    self.summarylabel3_piece.place(x=self.square_virtual_size * 8+120,y=self.controls_height+112,height=16)
-                    self.newsquare.set("[ "+str(self.moveSquare[0]+1)+" , "+str(self.moveSquare[1]+1)+" ]")
-                    self.movebutton.config(state="normal") # Unlocking the move button
+                self.HighlightSquare(row,col,"blue",'highlight') # Adding a blue edge around the square
+                self.square_text_x.set("Selected Square (x) = "+str(col+1)) # Indicating the selected square
+                self.square_text_y.set("Selected Square (y) = "+str(row+1))
+                # Then checking for what piece that is
+                found_key = []
+                if self.boardArrayPieces.loc[row,col] != 0:
+                    found_key = self.boardArrayPieces.loc[row,col].getid()
+                if found_key == []:
+                    occupier = "None"
+                    self.validClick = False
+                else:
+                    occupier = self.pieceDescription[found_key[0]]
+                    self.validClick = True
+                self.desiredSquare = [row,col] # Saving this information in the desiredSquare variable
+                self.square_text_displaypiece.set("Selected Piece = "+occupier)
+                self.square_text_displaypiece_bybutton.set(occupier)
+
+                if self.initiated and found_key != []: # If a game has been started
+                    self.VisualiseMoves(row,col,found_key) # Asking all possible moves to be displayed by calling this method
+            else: # Otherwise if the click wasn't valid
+                self.canvas.delete("highlight") # Clear highlighting
+                self.canvas.delete("example")
+                self.HighlightSquare(row,col,"red",'highlight') # Display a red edge
+
+        else: # Otherwise we have clicked outside the board so we reset
+            self.canvas.delete("move")  # Clearing all types of highlighting currently o the board
+            self.canvas.delete("highlight")
+            self.canvas.delete("example")
+            self.square_text_x.set("Selected Square (x) = None")
+            self.square_text_y.set("Selected Square (y) = None")
+            self.square_text_displaypiece.set("Selected Piece = None")
+        # else:
+        #     # If the square has been locked
+        #     offset = self.square_virtual_size # This is the number required to make it work......
+        #     col = math.floor(xcoords/offset)
+        #     row = math.floor(ycoords/offset)
+        #     target_squares = self.PossibleMoves(self.desiredSquare[0],self.desiredSquare[1]) # Requesting the possible moves
+        #     for plotter in target_squares: # Cycling through them all
+        #         if plotter[0] == str(row) and plotter[1] == str(col): # Checking if the clicked square is one of them
+        #             self.canvas.delete("move") # Deleting previous highlights
+        #             self.HighlightSquare(row,col,"green",'move') # Adding a new one in this square
+        #             self.moveSquare = [row,col] # Setting the move square to the one clicked
+        #             self.summarylabel3.place(x=self.square_virtual_size * 8+50,y=self.controls_height+112,height=16) # Updating labels
+        #             self.summarylabel3_piece.place(x=self.square_virtual_size * 8+120,y=self.controls_height+112,height=16)
+        #             self.newsquare.set("[ "+str(self.moveSquare[0]+1)+" , "+str(self.moveSquare[1]+1)+" ]")
+        #             self.movebutton.config(state="normal") # Unlocking the move button
 
     def HighlightSquare(self,row,col,colour,tag):
         '''
@@ -611,8 +624,6 @@ class GameBoard(tk.Frame):
             else:
                 self.desiredSquare, self.moveSquare = self.playerHolder[self.holderEnum].taketurn(self.boardArrayPieces,self.colourArray)
             self.MovePiece()
-        else: # This is needed to unlock the selection before a players turn
-            self.LockSelection()
 
     def FENConvert(self,direction,target=None):
         '''
@@ -750,31 +761,6 @@ class GameBoard(tk.Frame):
             for col in range(0,8):
                 if self.boardArrayPieces.loc[row,col] != 0:
                     self.AddPiece(self.boardArrayPieces.loc[row,col].getid(),self.imageHolder[self.boardArrayPieces.loc[row,col].getid()[0]],row,col)
-
-    def LockSelection(self):
-        '''
-        Holds the code that detemines if a click was a valid selection of a moveable square. Sets visuals accordingly
-        :return: None
-        '''
-        # Activated by the select piece button
-        if self.validClick and self.squareChosen == False: # If the click was valid and a square hasn't been chosen
-            self.squareChosen = True # Indicate a square is chosen
-            self.selectbuttonstring.set("Deselect Piece") # Change the text to the opposite
-            self.selected_displaypiece_bybutton.config(background="green") # Use green to indicate a selection has been made
-            self.summarylabel1.place(x=self.square_virtual_size * 8+50,y=self.controls_height+84,height=16)
-            self.oldsquare.set("[ "+str(self.desiredSquare[0]+1)+" , "+str(self.desiredSquare[1]+1)+" ]")
-            self.summarylabel1.place(x=self.square_virtual_size * 8+50,y=self.controls_height+84,height=16)
-            self.summarylabel2.place(x=self.square_virtual_size * 8+50,y=self.controls_height+98,height=16)
-            self.summarylabel2_piece.place(x=self.square_virtual_size * 8+120,y=self.controls_height+98,height=16)
-        elif self.squareChosen: # If a piece was already chosen then we want to deselect
-            self.selectbuttonstring.set("Select Piece") # Revert the button
-            self.selected_displaypiece_bybutton.config(background="bisque")
-            self.oldsquare.set("") # Clear square text
-            self.newsquare.set("")
-            self.movebutton.config(state="disabled") # disable the move button
-            self.squareChosen = False # Toggle square chosen
-        else: # If neither cases are met then we do nothing
-            return
 
     def MovePiece(self):
         '''
