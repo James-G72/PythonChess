@@ -60,8 +60,30 @@ class King():
         self.moves = pd.DataFrame(np.zeros((8,8)),index=[0,1,2,3,4,5,6,7],columns=[0,1,2,3,4,5,6,7])
         for row_dif in [-1,0,1]:  # Going up from the row and then down
             for col_dif in [-1,0,1]:  # Going up from the column and then down
-                comp = row_dif==0 and col_dif==0
+                comp = row_dif == 0 and col_dif == 0
                 if 0 <= row+row_dif <= 7 and 0 <= col+col_dif <= 7 and not comp:
+                    c_boardarray = boardarray.copy()
+                    c_colourarray = colourarray.copy()
+                    c_boardarray.loc[row+row_dif,col+col_dif] = boardarray.loc[row,col]
+                    c_colourarray.loc[row+row_dif,col+col_dif] = colourarray.loc[row,col]
+                    c_boardarray.loc[row,col] = 0
+                    c_colourarray.loc[row,col] = 0
+                    for checkrow in range(0,7):
+                        for checkcol in range(0,7):
+                            if c_boardarray.loc[checkrow,checkcol] != 0 and c_boardarray.loc[checkrow,checkcol].getid()[0] != self.type:
+                                print(c_boardarray.loc[checkrow,checkcol].getid())
+                                # We get stuck here
+                                c_boardarray.loc[checkrow,checkcol].updatemoves(checkrow,checkcol,c_boardarray,c_colourarray)
+                    c_boardarray.loc[row+row_dif,col+col_dif] = 0 # Removing this piece
+                    seen = False
+                    for checkrow in range(0,7):
+                        for checkcol in range(0,7):
+                            if c_boardarray.loc[checkrow,checkcol] != 0:
+                                squares = c_boardarray.loc[checkrow,checkcol].validsquares()
+                                if str(row+row_dif)+str(col+col_dif) in squares:
+                                    seen = True
+                    if seen:
+                        continue
                     if colourarray.loc[row+row_dif,col+col_dif] == 0:  # The square is free
                         check, attacks = self.checkCheck(boardarray,row+row_dif,col+col_dif)
                         if not check:
@@ -106,5 +128,6 @@ class King():
                             if int(curr[0]) == row and int(curr[1]) == col:
                                 check = True
                                 attacks.append([row,col,checkrow,checkcol])
-                                print(attacks)
+        # We can create a fake board array to run through update moves
+
         return check, attacks

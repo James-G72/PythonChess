@@ -271,14 +271,12 @@ class GameBoard(tk.Frame):
             else:
                 self.PlacePiece(self.boardArrayPieces.loc[self.drag_from_row,self.drag_from_col].getid(),self.drag_from_row,self.drag_from_col) # Returns piece to start
 
-
     def GetCoords(self, event):
         '''
         This function listens for a click and passes the coordinates of any clicks into SelectSquare.
         :param event: A click
         :return: None
         '''
-        print("Click")
         global x0,y0
         x0 = event.x # Event is a click
         y0 = event.y
@@ -784,10 +782,7 @@ class GameBoard(tk.Frame):
         if check:
             # Then 1 of the kings is in check. This should only ever be 1 piece
             # We know which king by the attacks array but it should also only ever be the king whos turn it currently is
-            if self.boardArrayPieces.loc[self.checkPiece[0][0],self.checkPiece[0][1]].validsquares() == []:
-                # Setting both the king piece checkMate marker and the board check mate marker to true
-                self.boardArrayPieces.loc[self.checkPiece[0][0],self.checkPiece[0][1]].checkMate = True
-                self.ExcecuteCheckmate()
+            self.CheckMate()
         # Flip the turn
         if self.current_turn_check == "w":
             self.current_turn_disp.set("Black Pieces")
@@ -830,18 +825,38 @@ class GameBoard(tk.Frame):
                             check = True
                             self.checkPiece = attacks
 
-
         return check
+
+    def CheckMate(self):
+        '''
+        This performs a check to see if the king can get out of check
+        :return:
+        '''
+        if self.boardArrayPieces.loc[self.checkPiece[0][0],self.checkPiece[0][1]].validsquares() != []:
+            return
+        # Checking if the attacking piece can be taken
+        for row in range(0,8):  # Through all rows
+            for col in range(0,8):  # And all columns
+                if self.boardArrayPieces.loc[row,col] != 0:  # If the space is blank we skip it
+                    squares = self.boardArrayPieces.loc[row,col].validsquares()
+                    for square in squares:
+                        if str(row)+str(col) == square:
+                            return
+        # If we have got to here then the situation is check mate
+        # Setting both the king piece checkMate marker and the board check mate marker to true
+        self.boardArrayPieces.loc[self.checkPiece[0][0],self.checkPiece[0][1]].checkMate = True
+        self.ExcecuteCheckmate()
 
     def ExcecuteCheckmate(self):
         '''
-        This is an end of game function that performs visuals
+        This is an end of game function that performs visuals and freezes the game
         :return:
         '''
         self.checkMate = True
         self.wins_message = tk.Label(self,text=self.current_turn_disp.get()[0:5]+" Wins!",font=("TKDefaultFont",86),bg="bisque") # Display winner in big letters
         self.wins_message.place(x=self.square_virtual_size * 1.5,y=270,height=90)
         self.Screenshot() # This needs to be placed into a button that appears alongside the winning message
+        self.initiated = False
 
     def Screenshot(self):
         '''
