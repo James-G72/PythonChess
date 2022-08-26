@@ -73,7 +73,7 @@ class King():
                             if c_boardarray.loc[checkrow,checkcol] != 0 and c_boardarray.loc[checkrow,checkcol].getid()[0] != self.type:
                                 print(c_boardarray.loc[checkrow,checkcol].getid())
                                 # We get stuck here
-                                c_boardarray.loc[checkrow,checkcol].updatemoves(checkrow,checkcol,c_boardarray,c_colourarray)
+                                # c_boardarray.loc[checkrow,checkcol].updatemoves(checkrow,checkcol,c_boardarray,c_colourarray)
                     c_boardarray.loc[row+row_dif,col+col_dif] = 0 # Removing this piece
                     seen = False
                     for checkrow in range(0,7):
