@@ -2,7 +2,7 @@ import tkinter as tk
 import pandas as pd
 import numpy as np
 import base64
-import ChessComponents
+from src import ChessComponents
 import math
 
 class GameBoard(tk.Frame):
@@ -68,7 +68,7 @@ class GameBoard(tk.Frame):
         colourList = "bw" # The two colours
         for f in pieceList: # Cycling through the pieces
             for l in colourList: # Alternating between the two colours
-                with open("Images/"+f+l+".gif","rb") as imageFile: # Opening the photo within the variable space
+                with open("src/Images/"+f+l+".gif","rb") as imageFile: # Opening the photo within the variable space
                     # The images can't be stored as P or p in MacOS as theyre read the same
                     # So the colour is introduced by adding b or w after the piece notation
                     string = base64.b64encode(imageFile.read()) # Creating a string that describes the gif in base64 format
@@ -79,7 +79,7 @@ class GameBoard(tk.Frame):
                     # if it is a black piece then no change is required
                     self.imageHolder[f] = tk.PhotoImage(data=string)
         # An additional image is a picture of a padlock to show that variables are locked
-        with open("Images/lock.gif","rb") as imageFile:
+        with open("src/Images/lock.gif","rb") as imageFile:
             string = base64.b64encode(imageFile.read())
         self.imageHolder["lock"] = tk.PhotoImage(data=string) # The picture is simply called lock in the dictionary
 
@@ -865,7 +865,6 @@ class GameBoard(tk.Frame):
         '''
         # This is very OTT
         from Quartz import CGWindowListCopyWindowInfo,kCGNullWindowID,kCGWindowListOptionAll
-        import matplotlib.pyplot as plt
         from PIL import Image
         import os
         from uuid import uuid4
@@ -878,7 +877,8 @@ class GameBoard(tk.Frame):
                     if window_name.lower() in window['kCGWindowName'].lower():
                         filename = gen_filename()
                         os.system('screencapture -l %s %s' % (window['kCGWindowNumber'],filename))
-                        Image.open(filename).save(ChessComponents.__file__[:-27]+"Saved Games/"+datetime.datetime.now().strftime('%H:%M:%S').replace(":","_")+" "+datetime.date.today().strftime("%d-%b-%Y").replace("-","_")+".png")
+                        Image.open(filename).save(
+                            ChessComponents.__file__[:-27]+"Saved Games/"+datetime.datetime.now().strftime('%H:%M:%S').replace(":","_")+" "+datetime.date.today().strftime("%d-%b-%Y").replace("-","_")+".png")
                         os.remove(filename)
                         break
                 except:
